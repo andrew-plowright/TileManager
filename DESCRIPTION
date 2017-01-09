@@ -1,0 +1,18 @@
+Package: TileManager
+Type: Package
+Title: Tile Manager
+Version: 0.0.0.9000
+Date: 2016-12-03
+Author: Andrew Plowright
+Maintainer: Andrew Plowright <andrew.plowright@alumni.ubc.ca>
+Description: Tools for creating and detecting tiling schemes for raster datasets
+License: GPL (>= 3)
+LazyData: TRUE
+Imports:
+    APtools,
+    raster,
+    rgdal,
+    rgeos,
+    sp
+RoxygenNote: 5.0.1
+Suggests: testthat
