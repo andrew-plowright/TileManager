@@ -4,15 +4,15 @@ context("Tests for TileScheme")
 
 ### LOAD TEST DATA
 
-inRas <- raster::raster("testFiles\\testRaster.tif")
-emptyRas <- raster::setValues(inRas, NA)
+data(CHMdemo)
+emptyRas <- raster::setValues(CHMdemo, NA)
 
 
 ### PERFORM TESTS
 
 test_that("TileScheme performs as expected using \'dimByCell\' with no buffers", {
 
-  tile.bycell <- TileScheme(inRas, dimByCell = c(200,300), removeEmpty = TRUE)
+  tile.bycell <- TileScheme(CHMdemo, dimByCell = c(200,300), removeEmpty = TRUE)
 
   # Expected size of a the first tile
   expect_identical(rgeos::gArea(tile.bycell$tilePolygons[1,]), 3750)
@@ -33,7 +33,7 @@ test_that("TileScheme performs as expected using \'dimByCell\' with no buffers",
 
 test_that("TileScheme performs as expected using \'dimByCell\' with buffers", {
 
-  tile.bycell2 <- TileScheme(inRas, dimByCell = c(100,100), buffer = 5, removeEmpty = TRUE)
+  tile.bycell2 <- TileScheme(CHMdemo, dimByCell = c(100,100), buffer = 5, removeEmpty = TRUE)
 
   # Expected size of a the first tile
   expect_identical(rgeos::gArea(tile.bycell2$tilePolygons[1,]), 625)
@@ -60,7 +60,7 @@ test_that("TileScheme performs as expected using \'dimByCell\' with buffers", {
 
 test_that("TileScheme performs as expected using \'dimByDist\' with buffers", {
 
-  tile.bydist <- TileScheme(inRas, dimByDist = c(30,40), buffer = 4, removeEmpty = TRUE)
+  tile.bydist <- TileScheme(CHMdemo, dimByDist = c(30,40), buffer = 4, removeEmpty = TRUE)
 
   # Expected size of a the first tile
   expect_identical(rgeos::gArea(tile.bydist$tilePolygons[1,]), 1200)
