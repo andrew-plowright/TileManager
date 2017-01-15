@@ -17,6 +17,6 @@ Imports:
     methods,
     graphics,
     APfun
-Remotes: AndyPL/APfun
+Remotes: AndyPL22/APfun
 RoxygenNote: 5.0.1
 Suggests: testthat
