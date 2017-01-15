@@ -4,7 +4,7 @@ context("Tests for TileScheme")
 
 ### LOAD TEST DATA
 
-load("testFiles\\testRaster.Rda")
+inRas <- raster::raster("testFiles\\testRaster.tif")
 emptyRas <- raster::setValues(inRas, NA)
 
 
