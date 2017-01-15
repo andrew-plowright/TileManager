@@ -1,2 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^builder_TileManager\.R$
+^temp_TilePlot\.R$
+^\.travis\.yml$
+^cran-comments\.md$
+^README\.Rmd$
+^README-.*\.png$
