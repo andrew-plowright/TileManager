@@ -1,3 +1,21 @@
+#' Tile Detector
+#'
+#' Function for detecting existing tiling scheme from a list of RasterLayers.
+#'
+#' @param inRasters a list of RasterLayers (see \link[raster]{raster})
+#' @param reord logical. If set to \code{FALSE}, tiles will be stored in the same order in which
+#' they appear in \code{inRasters}. If \code{TRUE}, tiles will be reordered by column and then by row.
+#'
+#' @return The output of this function is a list of three \link[sp]{SpatialPolygonsDataFrame} objects:
+#'   \item{tilePolygons}{The tiling grid. Each polygon corresponds to the extent of a single unbuffered tile.}
+#'   \item{buffPolygons}{The buffered tiling grid. Each polygon corresponds to the extent of a buffered tile. These
+#'   polygons overlap with neighbouring tiles. If \code{buffer} is set to 0, this output will be identical to \code{tilePolygons}.}
+#'   \item{nbuffPolygons}{Non-overlapping buffered tiles. These polygons remove overlapping buffers for adjacent tiles, but
+#'   preserve buffers for tiles on the edges of the tiling grid. Useful for "reassembling" data that had been originally broken
+#'   into tiles.}
+#'
+#' @export
+
 TileDetector <- function(inRasters, reord = FALSE){
 
   ### GATE KEEPER
@@ -39,7 +57,7 @@ TileDetector <- function(inRasters, reord = FALSE){
 
     # Extract Extent objects and SpatialPolygons for each tile (assumed to be buffered)
     buffs.ext <- lapply(inRasters, raster::extent)
-    buffs.sp <- lapply(buffs.ext, as, "SpatialPolygons")
+    buffs.sp <- lapply(buffs.ext, methods::as, "SpatialPolygons")
 
     # Check if all tiles are connected
     if(length(rgeos::gUnaryUnion(reassembleSP(buffs.sp, IDs = 1:length(buffs.sp)))@polygons[[1]]@Polygons) > 1){
@@ -139,7 +157,7 @@ TileDetector <- function(inRasters, reord = FALSE){
         ext@ymin <- ext@ymin + buff.val[2]
         ext@ymax <- ext@ymax - buff.val[2]
         return(ext)})
-      unbuffs.sp <- lapply(unbuffs.ext, as, "SpatialPolygons")
+      unbuffs.sp <- lapply(unbuffs.ext, methods::as, "SpatialPolygons")
     }
 
     # Convert to SpatialPolygonsDataFrame

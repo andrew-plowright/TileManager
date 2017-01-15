@@ -7,6 +7,6 @@
 removeTempTiles()
 }
 \description{
-Remove Temporary Tiles
+Deletes temporary tiles created by \code{\link{TempTiles}}
 }
 

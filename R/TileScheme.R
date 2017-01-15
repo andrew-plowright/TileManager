@@ -114,14 +114,14 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
       # according to those that are within the input extent, and then start the sequence with the input's
       # xmin and ymax
       }else{
-        xSeq <- seq(APtools::AProunder(input.ext@xmin, dimByDist[1], "up", snap = snap[1]),
-                    APtools::AProunder(input.ext@xmax, dimByDist[1], "down", snap = snap[1]),
+        xSeq <- seq(APfun::AProunder(input.ext@xmin, dimByDist[1], "up", snap = snap[1]),
+                    APfun::AProunder(input.ext@xmax, dimByDist[1], "down", snap = snap[1]),
                     by = dimByDist[1])
         if(xSeq[1] > input.ext@xmin){xSeq <- c(input.ext@xmin, xSeq)}
         if(xSeq[length(xSeq)] < input.ext@xmax){xSeq <- c(xSeq, input.ext@xmax)}
 
-        ySeq <- seq(APtools::AProunder(input.ext@ymin, dimByDist[2], "up", snap = snap[2]),
-                    APtools::AProunder(input.ext@ymax, dimByDist[2], "down", snap = snap[2]),
+        ySeq <- seq(APfun::AProunder(input.ext@ymin, dimByDist[2], "up", snap = snap[2]),
+                    APfun::AProunder(input.ext@ymax, dimByDist[2], "down", snap = snap[2]),
                     by = dimByDist[2])
         if(ySeq[1] > input.ext@ymin){ySeq <- c(input.ext@ymin, ySeq)}
         if(ySeq[length(ySeq)] < input.ext@ymax){ySeq <- c(ySeq, input.ext@ymax)}
@@ -240,7 +240,7 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
   # Create function to convert extents to polygons
   convertToPolygons <- function(exts){sp::SpatialPolygonsDataFrame(sp::SpatialPolygons(
     lapply(1:length(exts), function(tileNum){
-      poly <- as(exts[[tileNum]], 'SpatialPolygons')@polygons[[1]]
+      poly <- methods::as(exts[[tileNum]], 'SpatialPolygons')@polygons[[1]]
       poly@ID <- tilesColRow.names[tileNum]
       return(poly)
     })), data.frame(tileName = tilesColRow.names, col = tilesColRow[,"col"], row = tilesColRow[,"row"], row.names = tilesColRow.names))}

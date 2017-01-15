@@ -6,7 +6,22 @@
 \usage{
 TileInput(input, inputName)
 }
+\arguments{
+\item{input}{a list of RasterLayers (see \link[raster]{raster}), a single RasterLayer or a vector
+of file paths directing to a series of raster files.}
+
+\item{inputName}{character. A name for the input, used only in error messages in case of an invalid input}
+}
+\value{
+a list of RasterLayers
+}
 \description{
-Takes either a single Raster object or paths to raster files and returns a list of Raster objects
+Function for handling tile set inputs.
+}
+\details{
+Certain functions (ex.: \code{\link{TileApply}}) are built to handle tile sets in the form of a list
+of RasterLayers. This function takes various types of input and returns such a list.
+If the \code{input} is a vector of file paths, \code{TileInput} will read those paths and return
+a list. If \code{input} is a single RasterLayer, it will return a list with a single element.
 }
 

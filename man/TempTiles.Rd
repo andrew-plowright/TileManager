@@ -6,7 +6,12 @@
 \usage{
 TempTiles(inRaster, tiles)
 }
+\arguments{
+\item{inRaster}{RasterLayer (see \link[raster]{raster})}
+
+\item{tiles}{a tile scheme generated using \code{\link{TileScheme}}}
+}
 \description{
-Generate Temporary Tiles
+Applies a tiling scheme to a RasterLayer and saves tiles to a temporary folder.
 }
 
