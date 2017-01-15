@@ -31,6 +31,7 @@ apt_packages:
 r_packages:
     - devtools
     - rgdal
+    - raster
 
 env:
     global:

@@ -214,7 +214,8 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
 
     # Determine which tiles hold only NA values
     empties <- sapply(tileExt, function(tile){
-      all(is.na(suppressWarnings(raster::crop(input, tile)[])))
+      all(is.na(suppressWarnings(raster::getValues(raster::crop(input, tile)))))
+      #all(is.na(suppressWarnings(raster::crop(input, tile)[])))
     })
 
     # If no tiles contain any values, return empty object
