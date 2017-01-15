@@ -22,7 +22,7 @@ before_install:
   - ./configure --prefix=/usr
   - make
   - sudo make install
-  - cd /home/travis/build/dankelley/oce
+  - cd /home/travis/build/AndyPL22/TileManager
 
 apt_packages:
     - libnetcdf-dev
@@ -31,7 +31,7 @@ apt_packages:
 r_packages:
     - devtools
     - rgdal
-    - ncdf4
+
 env:
     global:
         - _R_CHECK_FORCE_SUGGESTS_=False
