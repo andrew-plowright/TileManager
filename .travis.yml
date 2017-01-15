@@ -1,5 +1,38 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-language: R
-sudo: false
-cache: packages
+language: r
+warnings_are_errors: false
+sudo: required
+
+before_install:
+  - curl -OL https://raw.githubusercontent.com/metacran/r-builder/master/pkg-build.sh
+  - chmod 755 pkg-build.sh
+  - ./pkg-build.sh bootstrap
+  - cd
+  - wget http://download.osgeo.org/gdal/2.0.1/gdal-2.0.1.tar.gz
+  - tar zxf gdal-2.0.1.tar.gz
+  - cd gdal-2.0.1
+  - ./configure --prefix=/usr
+  - make
+  - sudo make install
+  - cd
+  - wget http://download.osgeo.org/proj/proj-4.9.2.tar.gz
+  - tar zxvf proj-4.9.2.tar.gz
+  - cd proj-4.9.2
+  - ./configure --prefix=/usr
+  - make
+  - sudo make install
+  - cd /home/travis/build/dankelley/oce
+
+apt_packages:
+    - libnetcdf-dev
+    - netcdf-bin
+
+r_packages:
+    - devtools
+    - rgdal
+    - ncdf4
+env:
+    global:
+        - _R_CHECK_FORCE_SUGGESTS_=False
+        - _R_CHECK_CRAN_INCOMING=False
