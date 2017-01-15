@@ -1,38 +1,5 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-language: r
+language: R
+sudo: false
 cache: packages
-sudo: required
-dist: trusty
-
-addons:
-  postgresql: "9.3"
-
-before_install:
-  - sudo add-apt-repository ppa:ubuntugis/ppa --yes
-  - sudo apt-get --yes --force-yes update -qq
-  - sudo apt-get install --yes libudunits2-dev libproj-dev libgeos-dev libgdal-dev
-  - # install postgis from source:
-  - sudo apt-get --yes install libjson-c-dev postgresql-server-dev-9.3
-  - wget http://download.osgeo.org/postgis/source/postgis-2.3.1.tar.gz
-  - (mv postgis* /tmp; cd /tmp; tar xzf postgis-2.3.1.tar.gz)
-  - (cd /tmp/postgis-2.3.1 ; ./configure; make; sudo make install)
-  - # create postgis databases:
-  - sudo service postgresql restart
-  - createdb postgis
-  - psql -d postgis -c "CREATE EXTENSION postgis;"
-  - createdb empty
-  - psql -d empty -c "CREATE EXTENSION postgis;"
-
-warnings_are_errors: true
-
-r_packages:
-  - rgdal
-  - roxygen2
-  - rmarkdown
-
-r_github_packages:
-  - jimhester/covr
-
-after_success:
-  - Rscript -e 'covr::codecov()'
