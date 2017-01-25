@@ -5,7 +5,7 @@ Version: 0.1.1
 Date: 2017-01-25
 Author: Andrew Plowright
 Maintainer: Andrew Plowright <andrew.plowright@alumni.ubc.ca>
-Description: Tools for creating and detecting tiling schemes for raster datasets.
+Description: Tools for creating and detecting tiling schemes for raster data sets.
 Depends: R (>= 3.3.2)
 License: GPL (>= 3)
 LazyData: TRUE
