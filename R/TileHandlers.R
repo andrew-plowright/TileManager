@@ -130,17 +130,19 @@
 TempTiles <- function(inRaster, tiles){
 
   # Create temporary folder to house raster tiles
-  tileFolder <- paste0(tempdir(), "\\tileFolder")
+  tileFolder <- file.path(tempdir(), "tileFolder")
   dir.create(tileFolder)
 
   # Apply tiling scheme and save raster tiles to temporary folder
   for(i in 1:length(tiles$buffPolygons)){
+
     tile <- suppressWarnings(raster::crop(inRaster, raster::extent(tiles$buffPolygons[i,])))
-    raster::writeRaster(tile, paste0(tileFolder, "\\", as.character(tiles$buffPolygons[["tileName"]])[i], ".tif"), overwrite = TRUE)
+
+    raster::writeRaster(tile, file.path(tileFolder, paste0(as.character(tiles$buffPolygons[["tileName"]])[i], ".tif")), overwrite = TRUE)
   }
 
   # Read tile files
-  return(lapply(tiles$buffPolygons[["tileName"]], function(tile) raster::raster(paste0(tileFolder, "\\", tile, ".tif"))))
+  return(lapply(tiles$buffPolygons[["tileName"]], function(tile) raster::raster(file.path(tileFolder, paste0(tile, ".tif")))))
 }
 
 #' Remove Temporary Tiles
@@ -149,6 +151,7 @@ TempTiles <- function(inRaster, tiles){
 #'
 
 removeTempTiles <- function(){
-  tileFolder <- paste0(tempdir(), "\\tileFolder")
+  tileFolder <- file.path(tempdir(), "tileFolder")
+
   if(file.exists(tileFolder)){unlink(tileFolder, recursive = TRUE)}
 }
