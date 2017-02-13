@@ -27,7 +27,7 @@
 #'   into tiles.}
 #' @export
 
-TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bufferspill = FALSE, snap = NULL, removeEmpty = TRUE){
+TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bufferspill = FALSE, snap = NULL, removeEmpty = FALSE){
 
 ############
 # GATEKEEPER
@@ -68,8 +68,8 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
 
   # "buffer" cannot be equal to or larger than half of the input's narrowest side
   if(
-    (!is.null(dimByCell) & buffer >= (min(c(nrow(input), ncol(input))) / 2)) |
-    (!is.null(dimByDist) & buffer >= (min(c(raster::extent(input)@xmax - raster::extent(input)@xmin, raster::extent(input)@ymax - raster::extent(input)@ymin)) /2))
+    (!is.null(dimByCell) && buffer >= (min(c(nrow(input), ncol(input))) / 2)) |
+    (!is.null(dimByDist) && buffer >= (min(c(raster::extent(input)@xmax - raster::extent(input)@xmin, raster::extent(input)@ymax - raster::extent(input)@ymin)) /2))
   ){stop("\"buffer\" cannot be equal to or larger than half of narrowest side of the input raster")}
 
   # "buffer" cannot be equal to or larger than half of the narrowest tile side

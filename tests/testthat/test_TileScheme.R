@@ -6,7 +6,7 @@ context("Tests for TileScheme")
 
 data(CHMdemo)
 emptyRas <- raster::setValues(CHMdemo, NA)
-
+extDemo <- raster::extent(CHMdemo)
 
 ### PERFORM TESTS
 
@@ -84,4 +84,8 @@ test_that("TileScheme performs as expected using \'dimByDist\' with buffers", {
 
 })
 
+test_that("TileScheme performs as expected using \'dimByDist\' on an Extent object", {
+
+  tile.fromext <- TileScheme(extDemo, dimByDist = c(30,30))
+})
 
