@@ -9,4 +9,3 @@ removeTempTiles()
 \description{
 Deletes temporary tiles created by \code{\link{TempTiles}}
 }
-

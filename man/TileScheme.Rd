@@ -5,7 +5,7 @@
 \title{Tile Scheme}
 \usage{
 TileScheme(input, dimByCell = NULL, dimByDist = NULL, buffer = 0,
-  bufferspill = FALSE, snap = NULL, removeEmpty = TRUE)
+  bufferspill = FALSE, snap = NULL, removeEmpty = FALSE)
 }
 \arguments{
 \item{input}{filename (character), \link[raster]{extent}, \link[raster]{raster} or a vector of four numbers}
@@ -43,4 +43,3 @@ The output of this function is a list of three \link[sp]{SpatialPolygonsDataFram
 This function aims to provide an all-in-one tool for creating tiling schemes, which includes options for overlapping
 buffers and methods for describing tile sizes in various ways (i.e. using either distance units or cell numbers).
 }
-

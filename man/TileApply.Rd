@@ -46,4 +46,3 @@ in conjuction with \code{\link{TileInput}}.
 \seealso{
 \code{\link{TileInput}} \code{\link{TileScheme}} \code{\link{TileDetector}}
 }
-

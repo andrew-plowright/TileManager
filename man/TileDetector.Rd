@@ -24,4 +24,3 @@ The output of this function is a list of three \link[sp]{SpatialPolygonsDataFram
 \description{
 Function for detecting existing tiling scheme from a list of RasterLayers.
 }
-

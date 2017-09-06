@@ -20,7 +20,7 @@
     if(class(input) == "list"){
       if(!all(sapply(input, class) == "RasterLayer")){stop("Invalid input list for \'", inputName ,"\'. List must be composed of tiled \'RasterLayer\' objects.")}
 
-      if(nrow(unique(do.call(rbind, lapply(input, raster::res)))) > 1){stop("Invalid input list for \'", inputName ,"\'. Inconsistent pixel resolution")}
+      raster::compareRaster(input, extent = FALSE, orig = TRUE, rowcol = FALSE, crs = TRUE, res = TRUE)
     }
 
     # If input is a character vector ensure that it refers to valid file path(s) to raster layers

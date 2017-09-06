@@ -24,4 +24,3 @@ of RasterLayers. This function takes various types of input and returns such a l
 If the \code{input} is a vector of file paths, \code{TileInput} will read those paths and return
 a list. If \code{input} is a single RasterLayer, it will return a list with a single element.
 }
-

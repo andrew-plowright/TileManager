@@ -82,6 +82,10 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
     inProj <- NA
   }
 
+  # If a single number is input to either "dimByCell" or "dimByDist", repeat it a second time
+  if(!is.null(dimByCell) && length(dimByCell) == 1) dimByCell <- rep(dimByCell, 2)
+  if(!is.null(dimByDist) && length(dimByDist) == 1) dimByDist <- rep(dimByDist, 2)
+
 ########################
 # DIMENSIONS BY DISTANCE
 ########################
@@ -265,5 +269,6 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
 
   output <- list(tilePoly, buffPoly, nbuffPoly)
   names(output) <- c("tilePolygons", "buffPolygons", "nbuffPolygons")
+  class(output) <- "tileScheme"
   return(output)
 }

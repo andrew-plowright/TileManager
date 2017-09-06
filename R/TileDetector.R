@@ -173,5 +173,6 @@ TileDetector <- function(inRasters, reord = FALSE){
     # Assemble into output list
     outList <- list(unbuffs.spdf, buffs.spdf, nbuffs.spdf)
     names(outList) <- c("tilePolygons", "buffPolygons", "nbuffPolygons")
+    class(outList) <- "tileScheme"
     return(outList)
     }

@@ -14,4 +14,3 @@ TempTiles(inRaster, tiles)
 \description{
 Applies a tiling scheme to a RasterLayer and saves tiles to a temporary folder.
 }
-
