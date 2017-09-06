@@ -1,3 +1,7 @@
+# TileManager 0.2.0
+
+Added an S3 'tileScheme' object class with a 'plot' method.
+
 # TileManager 0.1.1
 
 Replaced 'paste' with 'file.path' for constructing file paths in the 'TempTiles' and 'removeTempTiles' functions. This will hopefully fix a bug whereby temporary files are left behind on POSIX file systems.

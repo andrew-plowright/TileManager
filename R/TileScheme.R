@@ -14,14 +14,14 @@
 #' buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
 #' of the extent of \code{input}
 #' @param snap optional. Vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
-#' be aligned. Can only be used in conjuction with \code{dimByDist}. The coordinates do not need to b within the extent of
+#' be aligned. Can only be used in conjunction with \code{dimByDist}. The coordinates do not need to b within the extent of
 #' \code{input}
 #' @param removeEmpty logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
 #' will be removed from the tiling scheme. Can only be used when \code{input} is a Raster object
 #' @return The output of this function is a list of three \link[sp]{SpatialPolygonsDataFrame} objects:
 #'   \item{tilePolygons}{The tiling grid. Each polygon corresponds to the extent of a single unbuffered tile.}
 #'   \item{buffPolygons}{The buffered tiling grid. Each polygon corresponds to the extent of a buffered tile. These
-#'   polygons overlap with neighbouring tiles. If \code{buffer} is set to 0, this output will be identical to \code{tilePolygons}.}
+#'   polygons overlap with neighboring tiles. If \code{buffer} is set to 0, this output will be identical to \code{tilePolygons}.}
 #'   \item{nbuffPolygons}{Non-overlapping buffered tiles. These polygons remove overlapping buffers for adjacent tiles, but
 #'   preserve buffers for tiles on the edges of the tiling grid. Useful for "reassembling" data that had been originally broken
 #'   into tiles.}

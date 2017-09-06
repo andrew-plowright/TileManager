@@ -9,7 +9,7 @@
 #' @return The output of this function is a list of three \link[sp]{SpatialPolygonsDataFrame} objects:
 #'   \item{tilePolygons}{The tiling grid. Each polygon corresponds to the extent of a single unbuffered tile.}
 #'   \item{buffPolygons}{The buffered tiling grid. Each polygon corresponds to the extent of a buffered tile. These
-#'   polygons overlap with neighbouring tiles. If \code{buffer} is set to 0, this output will be identical to \code{tilePolygons}.}
+#'   polygons overlap with neighboring tiles. If \code{buffer} is set to 0, this output will be identical to \code{tilePolygons}.}
 #'   \item{nbuffPolygons}{Non-overlapping buffered tiles. These polygons remove overlapping buffers for adjacent tiles, but
 #'   preserve buffers for tiles on the edges of the tiling grid. Useful for "reassembling" data that had been originally broken
 #'   into tiles.}

@@ -1,6 +1,6 @@
 ## Test environments
-* local Windows install, R 3.3.2
-* ubuntu 12.04.5 (on travis-ci), R 3.3.2
+* local Windows install, R 3.4
+* ubuntu 14.04.5 (on travis-ci), R 3.4
 * Win-builder (devel and release)
 
 ## R CMD check results
@@ -9,6 +9,4 @@
 
 ## Reverse dependencies
 
-This update is to correct an issue that was revealed when running checks on the ForestTools package, which depends on the TileManager package. On a POSIX file system, some files would be left in /tmp since their file paths were defined using the 'paste' function instead of 'file.path'. This has now been corrected.
-
-** EDIT: Also added the "revdep" folder to .Rbuildignore
+Package only has one reverse dependency: ForestTools. All checks passed.
