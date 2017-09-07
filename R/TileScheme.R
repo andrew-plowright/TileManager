@@ -25,6 +25,15 @@
 #'   \item{nbuffPolygons}{Non-overlapping buffered tiles. These polygons remove overlapping buffers for adjacent tiles, but
 #'   preserve buffers for tiles on the edges of the tiling grid. Useful for "reassembling" data that had been originally broken
 #'   into tiles.}
+#' @examples
+#' # Create an irregularly shaped grid defined by the number of raster cells
+#' ts1 <- TileScheme(CHMdemo, dimByCell = c(100,120))
+#'
+#' # Create an square shaped grid defined by unit distance (m)
+#' ts2 <- TileScheme(CHMdemo, dimByDist = c(50,50))
+#'
+#' # Create a grid with buffered cells
+#' ts3 <- TileScheme(CHMdemo, dimByDist = c(50,50), buffer = 5)
 #' @export
 
 TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bufferspill = FALSE, snap = NULL, removeEmpty = FALSE){

@@ -10,3 +10,7 @@
 ## Reverse dependencies
 
 Package only has one reverse dependency: ForestTools. All checks passed.
+
+## Notes
+
+Added examples for 'TileScheme.R'

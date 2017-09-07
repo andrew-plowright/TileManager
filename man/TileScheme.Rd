@@ -43,3 +43,13 @@ The output of this function is a list of three \link[sp]{SpatialPolygonsDataFram
 This function aims to provide an all-in-one tool for creating tiling schemes, which includes options for overlapping
 buffers and methods for describing tile sizes in various ways (i.e. using either distance units or cell numbers).
 }
+\examples{
+# Create an irregularly shaped grid defined by the number of raster cells
+ts1 <- TileScheme(CHMdemo, dimByCell = c(100,120))
+
+# Create an square shaped grid defined by unit distance (m)
+ts2 <- TileScheme(CHMdemo, dimByDist = c(50,50))
+
+# Create a grid with buffered cells
+ts3 <- TileScheme(CHMdemo, dimByDist = c(50,50), buffer = 5)
+}
