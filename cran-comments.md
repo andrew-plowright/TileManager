@@ -1,6 +1,6 @@
 ## Test environments
-* local Windows install, R 3.4
-* ubuntu 14.04.5 (on travis-ci), R 3.4
+* local Windows install, R 3.5.1
+* ubuntu 14.04.5 (on travis-ci), R 3.5.1
 * Win-builder (devel and release)
 
 ## R CMD check results
@@ -9,8 +9,8 @@
 
 ## Reverse dependencies
 
-Package only has one reverse dependency: ForestTools. All checks passed.
+Package has no reverse depencies.
 
 ## Notes
 
-Added examples for 'TileScheme.R'
+Removed several deprecated functions: see NEWS file.
