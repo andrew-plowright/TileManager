@@ -1,6 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^builder_TileManager\.R$
+^devtools\.R$
 ^temp_TilePlot\.R$
 ^\.travis\.yml$
 ^cran-comments\.md$

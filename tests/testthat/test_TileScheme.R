@@ -87,5 +87,7 @@ test_that("TileScheme performs as expected using \'dimByDist\' with buffers", {
 test_that("TileScheme performs as expected using \'dimByDist\' on an Extent object", {
 
   tile.fromext <- TileScheme(extDemo, dimByDist = c(30,30))
+
+  expect_equal(length(tile.fromext$tilePolygons), 20)
 })
 

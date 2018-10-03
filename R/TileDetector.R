@@ -18,7 +18,7 @@
 
 TileDetector <- function(inRasters, reord = FALSE){
 
-  ### GATE KEEPER
+  ### CHECK INPUTS ----
 
     if(length(inRasters) > 1){
       if(class(inRasters) == "list"){
@@ -43,7 +43,7 @@ TileDetector <- function(inRasters, reord = FALSE){
       stop("\'inRasters\' contains rasters with conflicting projection systems")
     }
 
-  ### HELPER FUNCTIONS
+  ### HELPER FUNCTIONS ----
 
     # Function that takes a list of SpatialPolygons, extracts first 'polygons' from each list element, and reassembles
     # into a new SpatialPolygons object
@@ -53,7 +53,7 @@ TileDetector <- function(inRasters, reord = FALSE){
       return(sp::SpatialPolygons(mergePoly))
     }
 
-  ### PRE-PROCESS: EXTRACT RASTER SPATIAL POLYGONS FOR EACH TILE
+  ### PRE-PROCESS: EXTRACT RASTER SPATIAL POLYGONS FOR EACH TILE ----
 
     # Extract Extent objects and SpatialPolygons for each tile (assumed to be buffered)
     buffs.ext <- lapply(inRasters, raster::extent)
@@ -64,7 +64,7 @@ TileDetector <- function(inRasters, reord = FALSE){
       stop("Orphaned tile(s) detected. All input tiles must be connected")
     }
 
-  ### PROCESS: DETECT BUFFERS
+  ### PROCESS: DETECT BUFFERS ----
 
     buff.val <- do.call(rbind, lapply(1:length(buffs.ext), function(i){
 
@@ -117,7 +117,7 @@ TileDetector <- function(inRasters, reord = FALSE){
       buff.val <- as.numeric(buff.val)
     }
 
-  ### PROCESS: REORDER TILES, GET COL/ROW INFO AND CONVERT TO SPDF
+  ### PROCESS: REORDER TILES, GET COL/ROW INFO AND CONVERT TO SPDF ----
 
     # Acquire centroids for each tile
     centroids <- do.call(rbind, lapply(buffs.sp, function(ext) rgeos::gCentroid(ext)@coords))
@@ -146,7 +146,7 @@ TileDetector <- function(inRasters, reord = FALSE){
     buffs.spdf <- sp::SpatialPolygonsDataFrame(reassembleSP(buffs.sp, row.names(tileData)), tileData[,c("tileName", "col", "row", "file")])
     raster::crs(buffs.spdf) <- raster::crs(inRasters[[1]])
 
-  ### PROCESS: CREATE UNBUFFERED TILES
+  ### PROCESS: CREATE UNBUFFERED TILES ----
 
     if(all(buff.val == 0)){
       unbuffs.sp <- buffs.sp
@@ -164,11 +164,11 @@ TileDetector <- function(inRasters, reord = FALSE){
     unbuffs.spdf <- sp::SpatialPolygonsDataFrame(reassembleSP(unbuffs.sp, row.names(tileData)), tileData[,c("tileName", "col", "row", "file")])
     raster::crs(unbuffs.spdf) <- raster::crs(inRasters[[1]])
 
-  ### PROCESS: CREATE NON-OVERLAPPING UNBUFFERED TILES
+  ### PROCESS: CREATE NON-OVERLAPPING UNBUFFERED TILES ----
 
     nbuffs.spdf <- NonoverlappingBuffers(buffs.spdf, unbuffs.spdf)
 
-  ### OUTPUT
+  ### RETURN OUTPUT ----
 
     # Assemble into output list
     outList <- list(unbuffs.spdf, buffs.spdf, nbuffs.spdf)
