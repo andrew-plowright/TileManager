@@ -13,6 +13,8 @@
 #' @param bufferspill logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
 #' buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
 #' of the extent of \code{input}
+#' @param prj character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
+#' a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.
 #' @param snap optional. Vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
 #' be aligned. Can only be used in conjunction with \code{dimByDist}. The coordinates do not need to b within the extent of
 #' \code{input}
@@ -38,7 +40,7 @@
 #' ts3 <- TileScheme(CHMdemo, dimByDist = c(50,50), buffer = 5)
 #' @export
 
-TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bufferspill = FALSE, snap = NULL, removeEmpty = FALSE){
+TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bufferspill = FALSE, prj = NULL, snap = NULL, removeEmpty = FALSE){
 
   ### CHECK INPUTS ----
 
@@ -85,11 +87,11 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
     if(buffer >= (min(c(dimByDist, dimByCell)) / 2)){stop("\"buffer\" cannot be equal to or larger than half of the narrowest tile side")}
 
     # Extract projection from input
-    if(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack")){
-      inProj <- raster::crs(input)
-    }else{
-      inProj <- NA
-    }
+    prj <- if(!is.null(prj)){
+      raster::crs(prj)
+    }else if(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack")){
+      raster::crs(input)
+    }else NA
 
     # If a single number is input to either "dimByCell" or "dimByDist", repeat it a second time
     if(!is.null(dimByCell) && length(dimByCell) == 1) dimByCell <- rep(dimByCell, 2)
@@ -256,9 +258,9 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
 
     # Convert to polygons
     tilePoly <- convertToPolygons(tileExt)
-    raster::crs(tilePoly) <- inProj
+    raster::crs(tilePoly) <- prj
     buffPoly <- convertToPolygons(buffExt)
-    raster::crs(buffPoly) <- inProj
+    raster::crs(buffPoly) <- prj
 
 
   ### CREATE NON-OVERLAPPING BUFFERS ----

@@ -5,7 +5,8 @@
 \title{Tile Scheme}
 \usage{
 TileScheme(input, dimByCell = NULL, dimByDist = NULL, buffer = 0,
-  bufferspill = FALSE, snap = NULL, removeEmpty = FALSE)
+  bufferspill = FALSE, prj = NULL, snap = NULL,
+  removeEmpty = FALSE)
 }
 \arguments{
 \item{input}{filename (character), \link[raster]{extent}, \link[raster]{raster} or a vector of four numbers}
@@ -22,6 +23,9 @@ the usage of \code{dimByCell} or \code{dimByDist} respectively}
 \item{bufferspill}{logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
 buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
 of the extent of \code{input}}
+
+\item{prj}{character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
+a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.}
 
 \item{snap}{optional. Vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
 be aligned. Can only be used in conjunction with \code{dimByDist}. The coordinates do not need to b within the extent of

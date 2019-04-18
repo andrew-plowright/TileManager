@@ -17,5 +17,5 @@ Imports:
     methods,
     graphics,
     APfun
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Suggests: testthat
