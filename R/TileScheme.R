@@ -3,7 +3,22 @@
 #' This function aims to provide an all-in-one tool for creating tiling schemes, which includes options for overlapping
 #' buffers and methods for describing tile sizes in various ways (i.e. using either distance units or cell numbers).
 #'
-#' @param input filename (character), \link[raster]{extent}, \link[raster]{raster} or a vector of four numbers
+#' @section Non-overlapping buffers:
+#'
+#' When processing a tiled dataset, using buffered tiles can help remove the edge effects along the
+#' individual tile borders. However, overlapping buffers generally need to be removed when recombining
+#' a series of tiles back into a single raster. Although this can be accomplished by using the unbuffered
+#' tile extent, this will also remove the buffered areas along the edge of the tile set. Once these
+#' unbuffered tiles are reassembled, the resulting raster will then be smaller than the original
+#' dataset before it was tiled.
+#'
+#' This may not be a desirable result. The polygons located in the \code{nbuffs} slot will produce a set of
+#' polygons that correspond to the tile extents that conserve buffers only where they do not overlap onto
+#' neighboring tiles (i.e.: along the edge of the tile set). These polygons are useful for cropping out
+#' overlapping areas from buffered tiles in order to reassemble the tiles into a single raster.
+#'
+#'
+#' @param input filename (character), Extent, Raster or a vector of four numbers
 #' @param dimByCell vector of two numbers. Defines the 'x' and 'y' dimensions of each tile in number of cells. Can only
 #' be used when \code{input} is a raster.
 #' @param dimByDist vector of two numbers. Defines the 'x' and 'y' dimensions of each tile in the distance unit of
@@ -13,7 +28,7 @@
 #' @param bufferspill logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
 #' buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
 #' of the extent of \code{input}
-#' @param prj character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
+#' @param crs character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
 #' a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.
 #' @param snap optional. Vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
 #' be aligned. Can only be used in conjunction with \code{dimByDist}. The coordinates do not need to b within the extent of
@@ -21,26 +36,26 @@
 #' @param removeEmpty logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
 #' will be removed from the tiling scheme. Can only be used when \code{input} is a Raster object
 #'
-#' @return The output of this function is a list of three \link[sp]{SpatialPolygonsDataFrame} objects:
-#'   \item{tilePolygons}{The tiling grid. Each polygon corresponds to the extent of a single unbuffered tile.}
-#'   \item{buffPolygons}{The buffered tiling grid. Each polygon corresponds to the extent of a buffered tile. These
+#' @return The output of this function is a list of three SpatialPolygonsDataFrame objects:
+#'   \item{tiles}{The tiling grid. Each polygon corresponds to the extent of a single unbuffered tile.}
+#'   \item{buffs}{The buffered tiling grid. Each polygon corresponds to the extent of a buffered tile. These
 #'   polygons overlap with neighboring tiles. If \code{buffer} is set to 0, this output will be identical to \code{tilePolygons}.}
-#'   \item{nbuffPolygons}{Non-overlapping buffered tiles. These polygons remove overlapping buffers for adjacent tiles, but
+#'   \item{nbuffs}{Non-overlapping buffered tiles. These polygons remove overlapping buffers for adjacent tiles, but
 #'   preserve buffers for tiles on the edges of the tiling grid. Useful for "reassembling" data that had been originally broken
 #'   into tiles.}
 #'
 #' @examples
 #' # Create an irregularly shaped grid defined by the number of raster cells
-#' ts1 <- TileScheme(CHMdemo, dimByCell = c(100,120))
+#' ts1 <- tileScheme(CHMdemo, dimByCell = c(100,120))
 #'
 #' # Create an square shaped grid defined by unit distance (m)
-#' ts2 <- TileScheme(CHMdemo, dimByDist = c(50,50))
+#' ts2 <- tileScheme(CHMdemo, dimByDist = c(50,50))
 #'
 #' # Create a grid with buffered cells
-#' ts3 <- TileScheme(CHMdemo, dimByDist = c(50,50), buffer = 5)
+#' ts3 <- tileScheme(CHMdemo, dimByDist = c(50,50), buffer = 5)
 #' @export
 
-TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bufferspill = FALSE, prj = NULL, snap = NULL, removeEmpty = FALSE){
+tileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bufferspill = FALSE, crs = NULL, snap = NULL, removeEmpty = FALSE){
 
   ### CHECK INPUTS ----
 
@@ -87,11 +102,11 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
     if(buffer >= (min(c(dimByDist, dimByCell)) / 2)){stop("\"buffer\" cannot be equal to or larger than half of the narrowest tile side")}
 
     # Extract projection from input
-    prj <- if(!is.null(prj)){
-      raster::crs(prj)
+    crs <- if(!is.null(crs)){
+      raster::crs(crs)
     }else if(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack")){
       raster::crs(input)
-    }else NA
+    }else sp::CRS()
 
     # If a single number is input to either "dimByCell" or "dimByDist", repeat it a second time
     if(!is.null(dimByCell) && length(dimByCell) == 1) dimByCell <- rep(dimByCell, 2)
@@ -128,34 +143,46 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
         # according to those that are within the input extent, and then start the sequence with the input's
         # xmin and ymax
         }else{
-          xSeq <- seq(APfun::AProunder(input.ext@xmin, dimByDist[1], "up", snap = snap[1]),
-                      APfun::AProunder(input.ext@xmax, dimByDist[1], "down", snap = snap[1]),
-                      by = dimByDist[1])
+          xSeq <- seq(
+            APfun::AProunder(input.ext@xmin, dimByDist[1], "up",   snap = snap[1]),
+            APfun::AProunder(input.ext@xmax, dimByDist[1], "down", snap = snap[1]),
+            by = dimByDist[1]
+            )
           if(xSeq[1] > input.ext@xmin){xSeq <- c(input.ext@xmin, xSeq)}
           if(xSeq[length(xSeq)] < input.ext@xmax){xSeq <- c(xSeq, input.ext@xmax)}
 
-          ySeq <- seq(APfun::AProunder(input.ext@ymin, dimByDist[2], "up", snap = snap[2]),
-                      APfun::AProunder(input.ext@ymax, dimByDist[2], "down", snap = snap[2]),
-                      by = dimByDist[2])
+          ySeq <- seq(
+            APfun::AProunder(input.ext@ymin, dimByDist[2], "up",   snap = snap[2]),
+            APfun::AProunder(input.ext@ymax, dimByDist[2], "down", snap = snap[2]),
+            by = dimByDist[2]
+            )
           if(ySeq[1] > input.ext@ymin){ySeq <- c(input.ext@ymin, ySeq)}
           if(ySeq[length(ySeq)] < input.ext@ymax){ySeq <- c(ySeq, input.ext@ymax)}
           ySeq <- rev(ySeq)} # Reverse the order of the y Sequence (max to min)
 
       # Assemble break points into intervals
-      xInt <-  data.frame(xmin = xSeq[1:(length(xSeq) - 1)],
-                          xmax = xSeq[2:length(xSeq)])
-      yInt <- data.frame(ymin = ySeq[2:length(ySeq)],
-                         ymax = ySeq[1:(length(ySeq) - 1)])
+      xInt <-  data.frame(
+        xmin = xSeq[1:(length(xSeq) - 1)],
+        xmax = xSeq[2:length(xSeq)]
+        )
+
+      yInt <- data.frame(
+        ymin = ySeq[2:length(ySeq)],
+        ymax = ySeq[1:(length(ySeq) - 1)]
+        )
 
       # Create series of row and col numbers
-      tilesColRow <- expand.grid(1:nrow(yInt), 1:nrow(xInt))[2:1]
-      colnames(tilesColRow) <- c("col", "row")
-      tilesColRow.names <- paste0("C", tilesColRow[,"col"], "R", tilesColRow[,"row"])
+      tilesColRow <- expand.grid(1:nrow(xInt), 1:nrow(yInt))[2:1]
+      colnames(tilesColRow) <- c("row", "col")
+      tilesColRow$tileName <- paste0("R", tilesColRow[,"row"], "C", tilesColRow[,"col"])
+      row.names(tilesColRow) <- tilesColRow$tileName
 
       # Join all combinations of intervals
-      tileInt <-  t(apply(tilesColRow, 1, function(pair){
-        as.numeric(c(xInt[pair[1],], yInt[pair[2],]))}))
-      colnames(tileInt) <- c("xmin", "xmax", "ymin", "ymax")
+      tileInt <- do.call(rbind, lapply(1:nrow(tilesColRow), function(x){
+
+        cbind(xInt[tilesColRow[x, "col"], ],
+              yInt[tilesColRow[x, "row"], ])
+      }))
 
       # Apply buffer
       buffInt <- tileInt
@@ -164,9 +191,9 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
 
       # Convert to Extent objects
       tileExt <- apply(tileInt, 1, raster::extent)
-      names(tileExt) <- tilesColRow.names
+      names(tileExt) <- tilesColRow$tileName
       buffExt <- apply(buffInt, 1, raster::extent)
-      names(buffExt) <- tilesColRow.names
+      names(buffExt) <- tilesColRow$tileName
     }
 
 
@@ -200,23 +227,26 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
                             rowmax = rowSeq[2:length(rowSeq)] - c(rep(1, length(rowSeq) - 2), 0))
 
       # Create series of tile row and tile col numbers
-      tilesColRow <- expand.grid(1:nrow(rowInt), 1:nrow(colInt))[2:1]
-      colnames(tilesColRow) <- c("col", "row")
-      tilesColRow.names <- paste0("C", tilesColRow[,"col"], "R", tilesColRow[,"row"])
+      tilesColRow <- expand.grid(1:nrow(colInt), 1:nrow(rowInt))[2:1]
+      colnames(tilesColRow) <- c("row", "col")
+      tilesColRow$tileName <- paste0("R", tilesColRow[,"row"], "C", tilesColRow[,"col"])
+      row.names(tilesColRow) <- tilesColRow$tileName
 
       # Join all combinations of intervals
-      tileInt <-  t(apply(tilesColRow, 1, function(pair){
-        as.numeric(c(colInt[pair[1],], rowInt[pair[2],]))}))
-      colnames(tileInt) <- c("colmin", "colmax", "rowmin", "rowmax")
+      tileInt <- do.call(rbind, lapply(1:nrow(tilesColRow), function(x){
+
+        cbind(colInt[tilesColRow[x, "col"], ],
+              rowInt[tilesColRow[x, "row"], ])
+      }))
+
 
       # Convert to extent objects
       tileExt <- apply(tileInt, 1, function(tile){
         raster::extent(input, tile["rowmin"],  tile["rowmax"],  tile["colmin"],  tile["colmax"])})
-      names(tileExt) <- tilesColRow.names
+      names(tileExt) <- tilesColRow$tileName
 
       # Apply buffer
       buffExt <- lapply(tileExt, function(tile){tile + buffer.dist * 2 })
-      names(buffExt) <- tilesColRow.names
     }
 
 
@@ -242,50 +272,139 @@ TileScheme <- function(input, dimByCell = NULL, dimByDist = NULL, buffer = 0, bu
       tileExt <- tileExt[!empties]
       buffExt <- buffExt[!empties]
       tilesColRow <- tilesColRow[!empties,]
-      tilesColRow.names <- tilesColRow.names[!empties]
     }
 
 
   ### CONVERT TO POLYGONS ----
 
-    # Create function to convert extents to polygons
-    convertToPolygons <- function(exts){sp::SpatialPolygonsDataFrame(sp::SpatialPolygons(
-      lapply(1:length(exts), function(tileNum){
-        poly <- methods::as(exts[[tileNum]], 'SpatialPolygons')@polygons[[1]]
-        poly@ID <- tilesColRow.names[tileNum]
-        return(poly)
-      })), data.frame(tileName = tilesColRow.names, col = tilesColRow[,"col"], row = tilesColRow[,"row"], row.names = tilesColRow.names))}
-
-    # Convert to polygons
-    tilePoly <- convertToPolygons(tileExt)
-    raster::crs(tilePoly) <- prj
-    buffPoly <- convertToPolygons(buffExt)
-    raster::crs(buffPoly) <- prj
-
-
-  ### CREATE NON-OVERLAPPING BUFFERS ----
-
-    nbuffPoly <- NonoverlappingBuffers(buffPoly, tilePoly)
+    tilePoly  <- .extents_to_polygons(tileExt)
+    buffPoly  <- .extents_to_polygons(buffExt)
+    nbuffPoly <- .nonoverlappingBuffers(tileExt, buffExt, tilesColRow)
 
 
   ### RETURN OUTPUT ----
 
-    output <- list(tilePoly, buffPoly, nbuffPoly)
-    names(output) <- c("tilePolygons", "buffPolygons", "nbuffPolygons")
-    class(output) <- "tileScheme"
-    return(output)
+    new("tileScheme",
+        tiles  = tilePoly,
+        buffs  = buffPoly,
+        nbuffs = nbuffPoly,
+        buffer = buffer,
+        crs    = crs,
+        data   = tilesColRow)
 }
 
 
-#' @rdname plot
-#' @method plot tileScheme
-#' @S3method plot tileScheme
 
-plot.tileScheme <- function(x, add = FALSE, ...){
 
-  if(!all(names(x) == c("tilePolygons", "buffPolygons", "nbuffPolygons"))) stop("Invalid 'tileScheme' object")
 
-  sp::plot(x$nbuffPolygons, border = "red", add = add)
-  sp::plot(x$buffPolygons,  border = "red", lty = 2, add = TRUE)
-  sp::plot(x$tilePolygons,  border = "blue", lwd = 2, add = TRUE)
+.extents_to_polygons <- function(extents){
+
+  ps <- setNames(lapply(names(extents), function(extName){
+
+    ext <- extents[[extName]]
+
+    p <- rbind(
+      c(ext@xmin, ext@ymin),
+      c(ext@xmin, ext@ymax),
+      c(ext@xmax, ext@ymax),
+      c(ext@xmax, ext@ymin),
+      c(ext@xmin, ext@ymin) )
+
+    sp::Polygons(list(sp::Polygon(p)), extName)
+
+  }), names(extents))
+
+  for(i in 1:length(ps)) ps[[i]]@plotOrder <- i
+
+  return(ps)
 }
+
+
+
+.nonoverlappingBuffers <- function(tileExt, buffExt, tilesColRow){
+
+  neibrowcol <- expand.grid(c(-1,0,1), c(-1,0,1))[-5,]
+  row.names(neibrowcol) <- c("topleft", "top", "topright", "left", "right", "bottomleft", "bottom", "bottomright")
+  colnames(neibrowcol)  <- c("col", "row")
+
+  neibgrid <- data.frame(
+    corner = c("topleft", "topright", "bottomright", "bottomleft"),
+    hor    = c("left", "right", "right", "left"),
+    vert   = c("top", "top", "bottom", "bottom"),
+    stringsAsFactors = FALSE)
+
+
+  ps <- lapply(1:nrow(tilesColRow), function(tileNum){
+
+    tileColRow <- as.numeric(tilesColRow[tileNum, c("col", "row")])
+    tileEx     <- tileExt[[tileNum]]
+    buffEx     <- buffExt[[tileNum]]
+
+    # Get row/col of potential neighbors
+    neibrowcol.tile <- as.data.frame(t(apply(neibrowcol, 1, function(r) r + tileColRow)))
+
+    # Determine which neighbors exist
+    neibrowcol.tile$exists <- utils::tail(duplicated(rbind(tilesColRow[,c("col", "row")], neibrowcol.tile)),8)
+    neibgrid.tile <- cbind(neibgrid, data.frame(
+      cornerExists = neibrowcol.tile[neibgrid$corner, "exists"],
+      horExists    = neibrowcol.tile[neibgrid$hor,    "exists"],
+      vertExists   = neibrowcol.tile[neibgrid$vert,   "exists"])
+      )
+
+    # Get positions of tile sides
+    dims.tile <- data.frame(
+      buff   = buffEx[],
+      unbuff = tileEx[],
+      diff   = buffEx[] - tileEx[],
+      row.names = c("left", "right", "bottom", "top"))
+
+    polyPts <- do.call(rbind, lapply(1:4, function(x){
+
+      # Get corner
+      crn <- neibgrid.tile[x,]
+
+      dims.crn <- dims.tile[c(crn[,"hor"], crn[,"vert"]),]
+
+      if(crn[,"horExists"] & crn[,"vertExists"]){
+
+        # Straight corner
+        return(dims.crn[cbind(1:2, as.numeric(c(crn[,"horExists"], crn[,"vertExists"])) + 1)])
+
+      }else{
+
+        if(crn[,"cornerExists"]){
+
+          if(crn[,"horExists"]){
+            horPt <- dims.crn[cbind(1:2, c(2,2))]
+          }else{
+            horPt <- dims.crn[cbind(1:2, c(1,2))] - c(0,dims.crn[crn[,"vert"], "diff"])
+          }
+          if(crn[,"vertExists"]){
+            vertPt <- dims.crn[cbind(1:2, c(2,2))]
+          }else{
+            vertPt <- dims.crn[cbind(1:2, c(2,1))] - c(dims.crn[crn[,"hor"], "diff"],0)
+          }
+          if(crn[,"corner"] %in% c("topleft", "bottomright")){
+            return(rbind(horPt, vertPt))
+          }else{
+            return(rbind(vertPt, horPt))
+          }
+
+        }else{
+
+          # Straight corner
+          return(dims.crn[cbind(1:2, as.numeric(c(crn[,"horExists"], crn[,"vertExists"])) + 1)])
+        }
+      }
+    }))
+
+    row.names(polyPts) <- 1:nrow(polyPts)
+    return(sp::Polygons(list(sp::Polygon(polyPts)), ID = tilesColRow[tileNum, "tileName"]))
+
+  })
+
+  for(i in 1:length(ps)) ps[[i]]@plotOrder <- i
+
+  return(ps)
+}
+
