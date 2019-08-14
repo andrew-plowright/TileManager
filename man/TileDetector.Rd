@@ -4,14 +4,14 @@
 \alias{tileDetector}
 \title{Tile Detector}
 \usage{
-tileDetector(inRasters, reord = FALSE)
+tileDetector(inRasters, roundCoords = 4)
 }
 \arguments{
 \item{inRasters}{a list of RasterLayers}
 
-\item{reord}{logical. If set to \code{FALSE}, tiles will be stored in the same order in which
-they appear in \code{inRasters}. If \code{TRUE}, tiles will be reordered by column and then by row.}
+\item{roundCoords}{numeric. Round input coordinates to this digit}
 }
 \description{
-Function for detecting existing tiling scheme from a list of RasterLayers.
+Function for detecting existing tiling scheme from a list of RasterLayers. This includes detecting buffers,
+row and column positions, and re-ordering based on tile location.
 }
