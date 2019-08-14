@@ -57,11 +57,11 @@ overlapping areas from buffered tiles in order to reassemble the tiles into a si
 }
 
 \examples{
-
+\dontrun{
 ts1 <- tileScheme(CHMdemo, tiledim = c(50,50))
 
 ts2 <- tileScheme(CHMdemo, tiledim = c(100,120), cells = TRUE)
 
 ts3 <- tileScheme(CHMdemo, tiledim = 40, buffer = 5, origin = c(0.5, 0.5))
-
+}
 }

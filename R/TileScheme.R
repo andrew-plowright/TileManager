@@ -38,13 +38,13 @@
 #' @return a 'tileScheme' object
 #'
 #' @examples
-#'
+#' \dontrun{
 #' ts1 <- tileScheme(CHMdemo, tiledim = c(50,50))
 #'
 #' ts2 <- tileScheme(CHMdemo, tiledim = c(100,120), cells = TRUE)
 #'
 #' ts3 <- tileScheme(CHMdemo, tiledim = 40, buffer = 5, origin = c(0.5, 0.5))
-#'
+#' }
 #' @export
 
 tileScheme <- function(input, tiledim, cells = FALSE,
