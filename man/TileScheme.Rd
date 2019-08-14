@@ -11,8 +11,8 @@ tileScheme(input, tiledim, cells = FALSE, buffer = 0,
 \arguments{
 \item{input}{filename (character), Extent, Raster or a vector of four numbers}
 
-\item{tiledim}{vector of two numbers. Defines the 'x' and 'y' dimensions of each tile. By default, dimensions are in map
-units. If `cells` is set to TRUE, then dimensions are in cell numbers}
+\item{tiledim}{numeric. Defines the 'x' and 'y' dimensions of each tile. By default, dimensions are in map
+units. If `cells` is set to TRUE, then dimensions are in number of cells}
 
 \item{cells}{logical. If set to TRUE, \code{tiledim} and \code{buffer} dimensions will be in number of cells instead of
 map units}
@@ -31,16 +31,10 @@ be aligned. Cannot be used in conjunction with \code{cells}. The coordinates do 
 \code{input}}
 
 \item{removeEmpty}{logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
-will be removed from the tiling scheme. Can only be used when \code{input} is a Raster object}
+will be removed from the tiling scheme. Can only be used when \code{input} is a Raster object.}
 }
 \value{
-The output of this function is a list of three SpatialPolygonsDataFrame objects:
-  \item{tiles}{The tiling grid. Each polygon corresponds to the extent of a single unbuffered tile.}
-  \item{buffs}{The buffered tiling grid. Each polygon corresponds to the extent of a buffered tile. These
-  polygons overlap with neighboring tiles. If \code{buffer} is set to 0, this output will be identical to \code{tilePolygons}.}
-  \item{nbuffs}{Non-overlapping buffered tiles. These polygons remove overlapping buffers for adjacent tiles, but
-  preserve buffers for tiles on the edges of the tiling grid. Useful for "reassembling" data that had been originally broken
-  into tiles.}
+a 'tileScheme' object
 }
 \description{
 This function aims to provide an all-in-one tool for creating tiling schemes, which includes options for overlapping
@@ -64,13 +58,10 @@ overlapping areas from buffered tiles in order to reassemble the tiles into a si
 
 \examples{
 
-# Create an square shaped grid defined by unit distance (m)
-ts1 <- TileScheme(CHMdemo, tiledim = c(50,50))
+ts1 <- tileScheme(CHMdemo, tiledim = c(50,50))
 
-# Create an irregularly shaped grid defined by the number of raster cells
-ts2 <- TileScheme(CHMdemo, tiledim = c(100,120), cells = TRUE)
-#'
-# Create a grid with buffered cells
-ts3 <- TileScheme(CHMdemo, tiledim = c(50,50), buffer = 5)
+ts2 <- tileScheme(CHMdemo, tiledim = c(100,120), cells = TRUE)
+
+ts3 <- tileScheme(CHMdemo, tiledim = 40, buffer = 5, origin = c(0.5, 0.5))
 
 }

@@ -4,7 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-Tile Manager: Tools for creating and detecting tiling schemes for raster datasets
+TileManager: Tools for creating and detecting tiling schemes for geospatial datasets
 ---------------
 
 **Authors:** Andrew Plowright<br/>
@@ -12,12 +12,139 @@ Tile Manager: Tools for creating and detecting tiling schemes for raster dataset
 
 [![Build Status](https://travis-ci.org/AndyPL22/TileManager.svg?branch=master)](https://travis-ci.org/AndyPL22/TileManager)
 
-```{r, echo = FALSE}
+```{r global_options, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "READMEimgs/",
+  fig.height = 4,
+  fig.width = 6
 )
+
+knitr::opts_knit$set(
+  global.par = TRUE
+  )
 ```
 
-This package provides tools for managing raster tiles. The package is built around `TileScheme`, which provides the means to generate a tileset from an existing raster, with options to snap the tile extents to specific intervals, to add buffers, to remove empty tiles, and to define tile sizes both by distance and by cell count.
+```{r, echo = FALSE}
+par(mar = c(3,3,1,0.1))
+```
+
+This package provides tools for working with tiled geospatial datasets.
+
+#### Introduction
+
+Use the `tileScheme` function to create a set of tiles from a Raster or Extent object.
+```{r demo1}
+library(TileManager)
+
+data(CHMdemo)
+
+ts <- tileScheme(CHMdemo, tiledim = c(30,30), buffer = 5)
+
+plot(CHMdemo)
+plot(ts, add = T)
+
+```
+
+Use the `removeEmpty` argument to drop tiles with no Raster values.
+```{r demo2}
+ts <- tileScheme(CHMdemo, tiledim = c(20,20), buffer = 2.5, removeEmpty = TRUE)
+
+plot(CHMdemo)
+plot(ts, add = T)
+
+```
+
+Other handy features:
+
+* The `origin` argument can be used to force the tile scheme to snap to a pair of coordinates.
+* The `bufferSpill` argument controls whether or not the buffers extent beyond the input's original extent.
+* By default, tile dimensions are in map units. Using the `cells` argument, they can be defined by a number of Raster cells.
+
+
+#### The 'tileScheme' class
+
+A 'tileScheme' object is composed of the following slots:
+```{r}
+str(ts, 2)
+```
+
+* Three lists of Polygons objects:
+    + `tiles`: the actual extents of the tiles
+    + `buffs`: the buffered tiles
+    + `nbuffs`: the non-overlapping buffers (see section below)
+* The `crs` slot, which stores the tile scheme's coordinate reference system.
+* A numeric `buffer` slot.
+* A data.frame in the `data` slot, which stores the row, column and name of each tile.
+```{r}
+head(ts@data)
+```
+
+#### Non-overlapping buffers
+
+Non-overlapping buffers (often abbreviated to **nbuffs**) are useful for re-assembling tiled data. Essentially, they preserve buffers only where they _do not overlap onto neighboring tiles_ (i.e.: along the edge of the tile scheme). This allows you to recombine tiles without worrying about overlapping areas _and_ without losing any information along the data edges.
+
+In the example below:
+
+* The __solid blue__ is the tile
+* The __dashed red__ is the buffer
+* The __solid red__ is the non-overlapping buffer
+```{r nbuff-sample, echo = FALSE}
+plot(CHMdemo, xlim = c(439871, 439960), ylim = c(5526705, 5526756), xlab = NA, ylab = NA, legend = FALSE)
+
+plot(ts, add = T)
+```
+
+#### Methods
+
+Some useful methods are provided for subsetting the tile scheme, or for converting it into other formats.
+
+Get buffers as a SpatialPolygonsDataFrame:
+
+```{r}
+ts[["buffs"]]
+```
+
+Subset a specific tile by name, number or row/col:
+
+```{r}
+# By name
+ts["R2C2"]
+
+# By number
+ts[7]
+
+# By row/col
+ts[2,3]
+```
+
+Subset entire rows or columns:
+
+```{r}
+# One row
+ts[4,]
+
+# Multiple columns
+ts[,2:3]
+```
+
+#### Saving and loading
+
+The tile scheme can be saved as a single SHP file. In this case, `tiles`, `buffs` and `nbuffs` will all be merged into a single polygons dataset. Buffer information is saved to an accompanying XML file.
+
+```{r, eval = FALSE}
+# Create tile scheme
+ts <- tileScheme(CHMdemo, tiledim = c(30,30), buffer = 5)
+
+# Save tile scheme
+tileSave(ts, "C:/myfiles/tilescheme.shp")
+
+# Load tile scheme
+ts <- tileLoad("C:/myfiles/tilescheme.shp")
+```
+
+
+#### Tile detection
+
+If you have a received a series of tiled raster files, the `tileDetector` function can even be used to detect the tile size and buffer size of the data and generate the associated `tileScheme`.

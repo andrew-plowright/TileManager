@@ -11,5 +11,5 @@ tileLoad(filepath)
 }
 \description{
 Load a Tile Scheme to a SHP file. The file needs to be originally saved using \code{tileSave}, since
-some metadata is required.
+some metadata (saved to an XML file) is required.
 }

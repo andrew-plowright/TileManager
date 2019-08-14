@@ -1,6 +1,6 @@
 #' Save Tile Scheme
 #'
-#' Save a Tile Scheme to a SHP file
+#' Save a Tile Scheme to a SHP file.
 #'
 #' @param ts tileScheme
 #' @param filepath file path
@@ -74,7 +74,7 @@ tileSave <- function(ts, filepath, overwrite = FALSE){
 #' Load Tile Scheme
 #'
 #' Load a Tile Scheme to a SHP file. The file needs to be originally saved using \code{tileSave}, since
-#' some metadata is required.
+#' some metadata (saved to an XML file) is required.
 #'
 #' @param filepath file path
 #'

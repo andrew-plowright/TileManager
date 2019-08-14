@@ -14,5 +14,5 @@ tileSave(ts, filepath, overwrite = FALSE)
 \item{overwrite}{logical. Overwrite existing file}
 }
 \description{
-Save a Tile Scheme to a SHP file
+Save a Tile Scheme to a SHP file.
 }

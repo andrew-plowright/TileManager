@@ -1,6 +1,6 @@
 #' Tile Detector
 #'
-#' Function for detecting existing tiling scheme from a list of RasterLayers. This includes detecting buffers,
+#' Function for detecting existing tiling scheme from a list of raster files or RasterLayers. This includes detecting buffers,
 #' row and column positions, and re-ordering based on tile location.
 #'
 #' @param inRasters a list of RasterLayers
