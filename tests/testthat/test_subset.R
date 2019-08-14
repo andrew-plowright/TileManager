@@ -2,7 +2,7 @@ library(TileManager)
 
 context("Subset tests")
 
-ts <- tileScheme(CHMdemo, dimByCell = c(50,60), buffer = 5, removeEmpty = TRUE)
+ts <- tileScheme(CHMdemo, tiledim = c(50,60), cells = TRUE, buffer = 5, removeEmpty = TRUE)
 
 
 test_that("Subset one row", {

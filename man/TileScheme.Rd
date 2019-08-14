@@ -4,21 +4,20 @@
 \alias{tileScheme}
 \title{Tile Scheme}
 \usage{
-tileScheme(input, dimByCell = NULL, dimByDist = NULL, buffer = 0,
-  bufferspill = FALSE, crs = NULL, snap = NULL,
+tileScheme(input, tiledim, cells = FALSE, buffer = 0,
+  bufferspill = FALSE, crs = NULL, origin = NULL,
   removeEmpty = FALSE)
 }
 \arguments{
 \item{input}{filename (character), Extent, Raster or a vector of four numbers}
 
-\item{dimByCell}{vector of two numbers. Defines the 'x' and 'y' dimensions of each tile in number of cells. Can only
-be used when \code{input} is a raster.}
+\item{tiledim}{vector of two numbers. Defines the 'x' and 'y' dimensions of each tile. By default, dimensions are in map
+units. If `cells` is set to TRUE, then dimensions are in cell numbers}
 
-\item{dimByDist}{vector of two numbers. Defines the 'x' and 'y' dimensions of each tile in the distance unit of
-\code{input} (usually meters)}
+\item{cells}{logical. If set to TRUE, \code{tiledim} and \code{buffer} dimensions will be in number of cells instead of
+map units}
 
-\item{buffer}{numeric. If set to >0, overlapping buffers will be created around each tile. Defined in cell number or distance unit, depending on the
-the usage of \code{dimByCell} or \code{dimByDist} respectively}
+\item{buffer}{numeric. If set to >0, overlapping buffers will be created around each tile}
 
 \item{bufferspill}{logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
 buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
@@ -27,8 +26,8 @@ of the extent of \code{input}}
 \item{crs}{character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
 a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.}
 
-\item{snap}{optional. Vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
-be aligned. Can only be used in conjunction with \code{dimByDist}. The coordinates do not need to b within the extent of
+\item{origin}{numeric. Optional vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
+be aligned. Cannot be used in conjunction with \code{cells}. The coordinates do not need to be within the extent of
 \code{input}}
 
 \item{removeEmpty}{logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
@@ -64,12 +63,14 @@ overlapping areas from buffered tiles in order to reassemble the tiles into a si
 }
 
 \examples{
-# Create an irregularly shaped grid defined by the number of raster cells
-ts1 <- tileScheme(CHMdemo, dimByCell = c(100,120))
 
 # Create an square shaped grid defined by unit distance (m)
-ts2 <- tileScheme(CHMdemo, dimByDist = c(50,50))
+ts1 <- TileScheme(CHMdemo, tiledim = c(50,50))
 
+# Create an irregularly shaped grid defined by the number of raster cells
+ts2 <- TileScheme(CHMdemo, tiledim = c(100,120), cells = TRUE)
+#'
 # Create a grid with buffered cells
-ts3 <- tileScheme(CHMdemo, dimByDist = c(50,50), buffer = 5)
+ts3 <- TileScheme(CHMdemo, tiledim = c(50,50), buffer = 5)
+
 }

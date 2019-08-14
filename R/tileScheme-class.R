@@ -98,7 +98,7 @@ setMethod("show", "tileScheme", function(object){
     "extent    : ", paste(raster::extent(sp::SpatialPolygons(object@tiles))[], collapse = ", "),  " (xmin, xmax, ymin, ymax)", "\n",
     "CRS       : ", as.character(object@crs), "\n",
     "tiles     : ", length(object@tiles), "\n",
-    "row/col   : ", length(unique(object@data$row)), ",", length(unique(object@data$col)), "\n",
+    "nrow/ncol : ", length(unique(object@data$row)), ",", length(unique(object@data$col)), "\n",
     "buffer    : ", object@buffer, "\n",
     "variables : ", paste(names(object@data), collapse = ", "),
     sep = ""
@@ -135,3 +135,54 @@ setMethod("plot", "tileScheme", function(x, labels = TRUE, add = FALSE, ...){
   }
 })
 
+#' @export
+#' @method length tileScheme
+
+setMethod("length", "tileScheme", function(x) nrow(x@data))
+
+
+#' @export
+#' @method identical tileScheme
+
+setGeneric("identical")
+
+setMethod("identical", "tileScheme", function(x, y){
+
+  sameLength <- all(
+    nrow(x@data)     == nrow(y@data),
+    length(x@tiles)  == length(y@tiles),
+    length(x@buffs)  == length(y@buffs),
+    length(x@nbuffs) == length(y@nbuffs)
+  )
+
+  if(sameLength){
+
+    all(
+
+      # Same data
+      all(x@data[,c("row", "col", "tileName")] == y@data[,c("row", "col", "tileName")]),
+
+      # Same data row.names
+      all(row.names(x@data) == row.names(y@data)),
+
+      # Same buffer
+      x@buffer == y@buffer,
+
+      # Same CRS
+      as.character(x@crs) == as.character(y@crs),
+
+      # Same tiles
+      all(mapply(identical, y@tiles, x@tiles)),
+
+      # Same buffs
+      all(mapply(identical, y@buffs, x@buffs)),
+
+      # Same nbuffs
+      all(mapply(identical, y@nbuffs, x@nbuffs))
+
+    )
+
+  }else FALSE
+
+
+})

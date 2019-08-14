@@ -10,9 +10,50 @@ extDemo <- raster::extent(CHMdemo)
 
 ### PERFORM TESTS
 
-test_that("TileScheme performs as expected using \'dimByCell\' with no buffers", {
+test_that("'tileScheme' performs as expected using buffers", {
 
-  tile.bycell <- tileScheme(CHMdemo, dimByCell = c(200,300), removeEmpty = TRUE)
+  tile.bydist <- tileScheme(CHMdemo, tiledim = c(30,40), buffer = 4, removeEmpty = TRUE)
+
+  # Expected size of a the first tile
+  expect_identical(tile.bydist@tiles[[1]]@area,  1200)
+  expect_identical(tile.bydist@buffs[[1]]@area,  1824)
+  expect_identical(tile.bydist@nbuffs[[1]]@area, 1496)
+
+  # Expectecd size of non-overlapping buffer tiles
+  expect_equal(tile.bydist@nbuffs[[3]]@area,  1488, tolerance = 0.000001)
+  expect_equal(tile.bydist@nbuffs[[7]]@area,  1480, tolerance = 0.000001)
+  expect_equal(tile.bydist@nbuffs[[12]]@area, 690.375, tolerance = 0.000001)
+
+  # Expected size of the entire tile set
+  expect_equal(rgeos::gArea(tile.bydist[["tiles"]]),  12401.38, tolerance = 0.000001)
+  expect_equal(rgeos::gArea(tile.bydist[["buffs"]]),  19355.38, tolerance = 0.000001)
+  expect_equal(rgeos::gArea(tile.bydist[["nbuffs"]]), 14419.38, tolerance = 0.000001)
+
+  # Expected number of tiles
+  expect_equal(length(tile.bydist@tiles),  12)
+  expect_equal(length(tile.bydist@buffs),  12)
+  expect_equal(length(tile.bydist@nbuffs), 12)
+
+  # Expected tile order
+  expect_equal(tile.bydist[1]@data$tileName,   "R1C1")
+  expect_equal(tile.bydist[2]@data$tileName,   "R1C2")
+  expect_equal(tile.bydist[1,1]@data$tileName, "R1C1")
+  expect_equal(tile.bydist[1,2]@data$tileName, "R1C2")
+  expect_equal(tile.bydist[2,1]@data$tileName, "R2C1")
+
+})
+
+test_that("'tileScheme' performs as expected using an Extent object", {
+
+  tile.fromext <- tileScheme(extDemo, tiledim = c(30,30))
+
+  expect_equal(length(tile.fromext@tiles), 20)
+})
+
+
+test_that("'tileScheme' performs as expected using 'cells' with no buffers", {
+
+  tile.bycell <- tileScheme(CHMdemo, tiledim = c(200,300), cells = TRUE, removeEmpty = TRUE)
 
   # Expected size of a the first tile
   expect_identical(tile.bycell@tiles[[1]]@area,  3750)
@@ -29,11 +70,18 @@ test_that("TileScheme performs as expected using \'dimByCell\' with no buffers",
   expect_equal(length(tile.bycell@buffs),  5)
   expect_equal(length(tile.bycell@nbuffs), 5)
 
+  # Expected tile order
+  expect_equal(tile.bycell[1]@data$tileName,   "R1C1")
+  expect_equal(tile.bycell[2]@data$tileName,   "R1C2")
+  expect_equal(tile.bycell[1,1]@data$tileName, "R1C1")
+  expect_equal(tile.bycell[1,2]@data$tileName, "R1C2")
+  expect_equal(tile.bycell[2,1]@data$tileName, "R2C1")
+
 })
 
-test_that("TileScheme performs as expected using \'dimByCell\' with buffers", {
+test_that("'tileScheme' performs as expected using 'cells' with buffers", {
 
-  tile.bycell2 <- tileScheme(CHMdemo, dimByCell = c(100,100), buffer = 5, removeEmpty = TRUE)
+  tile.bycell2 <- tileScheme(CHMdemo, tiledim = c(100,100), cells = TRUE, buffer = 5, removeEmpty = TRUE)
 
   # Expected size of a the first tile
   expect_identical(tile.bycell2@tiles[[1]]@area, 625)
@@ -58,36 +106,4 @@ test_that("TileScheme performs as expected using \'dimByCell\' with buffers", {
 })
 
 
-test_that("TileScheme performs as expected using \'dimByDist\' with buffers", {
-
-  tile.bydist <- tileScheme(CHMdemo, dimByDist = c(30,40), buffer = 4, removeEmpty = TRUE)
-
-  # Expected size of a the first tile
-  expect_identical(tile.bydist@tiles[[1]]@area,  1200)
-  expect_identical(tile.bydist@buffs[[1]]@area,  1824)
-  expect_identical(tile.bydist@nbuffs[[1]]@area, 1496)
-
-  # Expectecd size of non-overlapping buffer tiles
-  expect_equal(tile.bydist@nbuffs[[3]]@area,  1488, tolerance = 0.000001)
-  expect_equal(tile.bydist@nbuffs[[7]]@area,  1480, tolerance = 0.000001)
-  expect_equal(tile.bydist@nbuffs[[12]]@area, 690.375, tolerance = 0.000001)
-
-  # Expected size of the entire tile set
-  expect_equal(rgeos::gArea(tile.bydist[["tiles"]]),  12401.38, tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bydist[["buffs"]]),  19355.38, tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bydist[["nbuffs"]]), 14419.38, tolerance = 0.000001)
-
-  # Expected number of tiles
-  expect_equal(length(tile.bydist@tiles),  12)
-  expect_equal(length(tile.bydist@buffs),  12)
-  expect_equal(length(tile.bydist@nbuffs), 12)
-
-})
-
-test_that("TileScheme performs as expected using \'dimByDist\' on an Extent object", {
-
-  tile.fromext <- tileScheme(extDemo, dimByDist = c(30,30))
-
-  expect_equal(length(tile.fromext@tiles), 20)
-})
 
