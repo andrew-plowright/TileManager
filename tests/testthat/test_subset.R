@@ -74,8 +74,8 @@ test_that("Subset by tile number and tile name", {
 
 test_that("Expected errors", {
 
-  expect_error(ts[1000],        "Tile number is out of bounds")
-  expect_error(ts[c(1,2,NA)],   "Tile number is out of bounds")
+  expect_error(ts[1000],        "Tile number index is out of bounds")
+  expect_error(ts[c(1,2,NA)],   "Tile number index is out of bounds")
 
   expect_error(ts[1,1000],      "Column number is out of bounds")
   expect_error(ts[1,c(1,2,NA)], "Column number is out of bounds")
@@ -85,8 +85,8 @@ test_that("Expected errors", {
 
   expect_error(ts[c("R1C1", "R?C?")], "Could not find input tile name")
 
-  expect_error(ts[c(T,F,T), c(F,T,F)],           "Must use numeric values to subset")
-  expect_error(ts[c("R1", "R2"), c("C1", "C2")], "Must use numeric values to subset")
+  expect_error(ts[c(T,F,T), c(F,T,F)],           "object of type 'S4' is not subsettable")
+  expect_error(ts[c("R1", "R2"), c("C1", "C2")], "Cannot use second index when subsetting using tile name")
 
 })
 

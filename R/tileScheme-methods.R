@@ -1,45 +1,96 @@
-#' @name [
-#' @docType methods
-#' @rdname subset
-#' @title Subset
-#' @description Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
+#' Subset
+#'
+#' Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
+#'
 #' @param x a 'tileScheme' object
 #' @param i,j,... indices specifying elements to extract
 #' @param drop argument not used for 'tileScheme'
+#'
+#' @rdname subset
 #' @export
+setMethod("[", signature(x = "tileScheme", i = "character"),
+          function(x, i, j, ..., drop = TRUE) {
 
-setMethod("[", "tileScheme", function(x, i, j, ...) {
+            if(!missing(j)) stop("Cannot use second index when subsetting using tile name")
 
-  oneside <- length(sys.call()) - length(match.call()) == 1
+            w <- match(i, x@data$tileName)
 
-  w <- if(missing(j) & !oneside){
+            if(any(is.na(w))) stop("Could not find input tile name")
 
-    if(is.character(i)){
+            .subset_ts(x, w)
 
-      if(any(!i %in% row.names(x@data))) stop("Could not find input tile name(s)")
+          })
 
-    }else if(is.numeric(i)){
+#' @rdname subset
+#' @export
+setMethod("[", signature(x = "tileScheme", i = "numeric", j = "numeric"),
+          function(x, i, j, ..., drop = TRUE) {
 
-      if(any(!i %in% 1:nrow(x@data))) stop("Tile number is out of bounds")
+            if(any(!j %in% x@data$col)) stop("Column number is out of bounds")
+            if(any(!i %in% x@data$row)) stop("Row number is out of bounds")
 
-    }else stop("Subset using a character or numeric vector")
+            w <- which(x@data$col %in% j & x@data$row %in% i)
 
-    i
+            .subset_ts(x, w)
 
-  }else{
+          })
 
-    if(missing(i)) i <- x@data$row
-    if(missing(j)) j <- x@data$col
+#' @rdname subset
+#' @export
+setMethod("[", signature(x = "tileScheme", i = "numeric", j = "missing"),
+          function(x, i, j, ..., drop = TRUE) {
 
-    if(!is.numeric(i) | !is.numeric(j)) stop("Must use numeric values to subset according to row or column number")
+            theCall <- sys.call(-1)
+            narg <- length(theCall) - length(match.call(call=sys.call(-1)))
 
-    if(any(!j %in% x@data$col)) stop("Column number is out of bounds")
-    if(any(!i %in% x@data$row)) stop("Row number is out of bounds")
+            w <- if(narg > 0){
 
-    which(x@data$col %in% j & x@data$row %in% i)
-  }
+              if(any(!i %in% x@data$row)) stop("Row number is out of bounds")
+              which(x@data$row %in% i)
 
-  if(any(is.na(w)) | length(w) == 0) stop("Invalid subset")
+            }else{
+
+              if(any(!i %in% 1:nrow(x@data))) stop("Tile number index is out of bounds")
+
+              i
+            }
+
+            .subset_ts(x, w)
+
+          })
+
+#' @rdname subset
+#' @export
+setMethod("[", signature(x = "tileScheme", i = "missing", j = "numeric"),
+          function(x, i, j, ..., drop = TRUE) {
+
+            if(any(!j %in% x@data$col)) stop("Column number is out of bounds")
+
+            w <- which(x@data$col %in% j)
+
+            .subset_ts(x, w)
+
+          })
+
+
+#' @rdname subset
+#' @export
+setMethod("[[", signature(x = "tileScheme", i = "character", j = "missing"),
+
+          function(x, i, j, ..., exact=TRUE) {
+
+            valid <- c('tiles', 'buffs', 'nbuffs')
+
+            if(length(i) != 1 || !i %in% valid){
+              stop("Select one of the following: 'tiles', 'buffs', or 'nbuffs'")
+            }
+
+            sp::SpatialPolygonsDataFrame(sp::SpatialPolygons(slot(x, i), proj4string = x@crs), x@data)
+          })
+
+.subset_ts <- function(x, w){
+
+  if(any(duplicated(w))) stop("Cannot take duplicated indices")
 
   x@data   <- x@data[w,]
   x@tiles  <- x@tiles[w]
@@ -47,22 +98,8 @@ setMethod("[", "tileScheme", function(x, i, j, ...) {
   x@nbuffs <- x@nbuffs[w]
 
   return(x)
+}
 
-})
-
-#' @export
-
-setMethod("[[", "tileScheme", function(x, i, ...){
-
-  valid <- c('tiles', 'buffs', 'nbuffs')
-
-  if(missing(i) || length(i) != 1 || !i %in% valid){
-    stop("Select one of the following: 'tiles', 'buffs', or 'nbuffs'")
-  }
-
-  sp::SpatialPolygonsDataFrame(sp::SpatialPolygons(slot(x, i), proj4string = x@crs), x@data)
-
-})
 
 
 #' Show
