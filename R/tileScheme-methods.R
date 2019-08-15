@@ -6,8 +6,9 @@
 #' @param i,j,... indices specifying elements to extract
 #' @param drop argument not used for 'tileScheme'
 #'
+#' @rdname subset
+
 #' @export
-#'
 #' @rdname subset
 
 setMethod("[", "tileScheme", function(x, i, j, ...) {
