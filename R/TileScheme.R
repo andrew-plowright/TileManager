@@ -87,11 +87,11 @@ tileScheme <- function(input, tiledim, cells = FALSE,
     if(buffer >= (min(tiledim) / 2)){stop("'buffer' cannot be equal to or larger than half of the narrowest tile side")}
 
     # Extract projection from input
-    crs <- if(!is.null(crs)){
-      raster::crs(crs)
-    }else if(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack")){
-      raster::crs(input)
-    }else NA
+    crs <- raster::crs(
+      if(!is.null(crs)) crs
+      else if(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack")) input
+      else ""
+    )
 
     # If a single number is input to 'tiledim', repeat it
     if(length(tiledim) == 1) tiledim <- rep(tiledim, 2)

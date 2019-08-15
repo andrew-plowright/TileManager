@@ -1,6 +1,6 @@
 library(TileManager)
 
-context("Tests for TileScheme")
+context("Tests for 'tileScheme'")
 
 ### LOAD TEST DATA
 
