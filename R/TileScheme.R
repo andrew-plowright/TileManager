@@ -161,8 +161,8 @@ tileScheme <- function(input, tiledim, cells = FALSE,
       buffInt[,c("xmax", "ymax")] <- buffInt[,c("xmax", "ymax")] + buffer
 
       # Convert to Extent objects
-      tileExt <- setNames(apply(tileInt, 1, raster::extent), tilesRC$tileName)
-      buffExt <- setNames(apply(buffInt, 1, raster::extent), tilesRC$tileName)
+      tileExt <- stats::setNames(apply(tileInt, 1, raster::extent), tilesRC$tileName)
+      buffExt <- stats::setNames(apply(buffInt, 1, raster::extent), tilesRC$tileName)
 
     }
 
@@ -263,7 +263,7 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
 .extents_to_polygons <- function(extents){
 
-  ps <- setNames(lapply(names(extents), function(extName){
+  ps <- stats::setNames(lapply(names(extents), function(extName){
 
     ext <- extents[[extName]]
 

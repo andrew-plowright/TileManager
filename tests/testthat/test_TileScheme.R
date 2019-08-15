@@ -5,7 +5,7 @@ context("Tests for 'tileScheme'")
 ### LOAD TEST DATA
 
 data(CHMdemo)
-emptyRas <- raster::setValues(CHMdemo, NA)
+emptyRas <- suppressWarnings(raster::setValues(CHMdemo, NA))
 extDemo <- raster::extent(CHMdemo)
 
 ### PERFORM TESTS

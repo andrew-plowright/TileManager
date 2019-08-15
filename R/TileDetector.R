@@ -39,7 +39,7 @@ tileDetector <- function(inRasters, roundCoords = 4){
   ### READ IN DATA ----
 
     # Extract Extent objects and SpatialPolygons for each tile (assumed to be buffered)
-    buffExt  <- setNames(lapply(inRasters, raster::extent), 1:length(inRasters))
+    buffExt  <- stats::setNames(lapply(inRasters, raster::extent), 1:length(inRasters))
     buffPoly <- .extents_to_polygons(buffExt)
     buffSP   <- sp::SpatialPolygons(buffPoly)
 
