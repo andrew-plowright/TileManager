@@ -2,12 +2,25 @@
 % Please edit documentation in R/tileScheme-methods.R
 \name{identical}
 \alias{identical}
-\title{Identical}
+\title{Show}
 \usage{
 identical(x, y, num.eq = TRUE, single.NA = TRUE,
   attrib.as.set = TRUE, ignore.bytecode = TRUE,
   ignore.environment = FALSE, ignore.srcref = TRUE)
+
+identical(x, y, num.eq = TRUE, single.NA = TRUE,
+  attrib.as.set = TRUE, ignore.bytecode = TRUE,
+  ignore.environment = FALSE, ignore.srcref = TRUE)
+}
+\arguments{
+\item{x, y}{'tileScheme' object}
+
+\item{num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment, ignore.srcref}{arguments unused for 'tileScheme'}
+
+\item{show}{a 'tileScheme' object}
 }
 \description{
+Print information about a 'tileScheme' object
+
 Determine if two 'tileScheme' objects are identical
 }

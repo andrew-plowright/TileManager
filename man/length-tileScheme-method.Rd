@@ -7,6 +7,9 @@
 \usage{
 \S4method{length}{tileScheme}(x)
 }
+\arguments{
+\item{x}{'tileScheme' object}
+}
 \description{
 Get the number of a cells contained in a 'tileScheme' object
 }

@@ -7,6 +7,13 @@
 \usage{
 \S4method{[}{tileScheme,ANY,ANY}(x, i, j, ..., drop = TRUE)
 }
+\arguments{
+\item{x}{a 'tileScheme' object}
+
+\item{i, j, ...}{indices specifying elements to extract}
+
+\item{drop}{argument not used for 'tileScheme'}
+}
 \description{
 Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
 }

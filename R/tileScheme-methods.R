@@ -2,6 +2,10 @@
 #'
 #' Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
 #'
+#' @param x a 'tileScheme' object
+#' @param i,j,... indices specifying elements to extract
+#' @param drop argument not used for 'tileScheme'
+#'
 #' @export
 
 setMethod("[", "tileScheme", function(x, i, j, ...) {
@@ -46,6 +50,7 @@ setMethod("[", "tileScheme", function(x, i, j, ...) {
 
 })
 
+#' @export
 
 setMethod("[[", "tileScheme", function(x, i, ...){
 
@@ -64,7 +69,11 @@ setMethod("[[", "tileScheme", function(x, i, ...){
 #'
 #' Print information about a 'tileScheme' object
 #'
+#' @param show a 'tileScheme' object
+#'
 #' @export
+
+setGeneric("identical")
 
 setMethod("show", "tileScheme", function(object){
 
@@ -86,10 +95,19 @@ setMethod("show", "tileScheme", function(object){
 #'
 #' Plot a 'tileScheme' object
 #'
+#' @param x a 'tileScheme' object
+#' @param y argument not used for 'tileScheme' objects
+#' @param labels logical. Add row and column labels
+#' @param add logical. Plot 'tileScheme' on top of existing plot
+#' @param ... arguments t be passed to methods
+#'
 #' @export
 #' @method plot tileScheme
 
 setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
+
+#' @export
+#' @rdname plot
 
 setMethod("plot", "tileScheme", function(x, labels = TRUE, add = FALSE, ...){
 
@@ -114,6 +132,8 @@ setMethod("plot", "tileScheme", function(x, labels = TRUE, add = FALSE, ...){
 #'
 #' Get the number of a cells contained in a 'tileScheme' object
 #'
+#' @param x 'tileScheme' object
+#'
 #' @export
 
 setMethod("length", "tileScheme", function(x) nrow(x@data))
@@ -123,7 +143,11 @@ setMethod("length", "tileScheme", function(x) nrow(x@data))
 #'
 #' Determine if two 'tileScheme' objects are identical
 #'
+#' @param x,y 'tileScheme' object
+#' @param num.eq,single.NA,attrib.as.set,ignore.bytecode,ignore.environment,ignore.srcref arguments unused for 'tileScheme'
+#'
 #' @export
+#'
 #' @method identical tileScheme
 
 setGeneric("identical")
