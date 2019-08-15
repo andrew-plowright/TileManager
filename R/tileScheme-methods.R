@@ -4,7 +4,7 @@
 #'
 #' @param x a 'tileScheme' object
 #' @param i,j,... indices specifying elements to extract
-#' @param drop argument not used for 'tileScheme'
+#' @param drop,exact arguments not used for 'tileScheme'
 #'
 #' @rdname subset
 #' @export

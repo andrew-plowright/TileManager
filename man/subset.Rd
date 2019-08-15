@@ -24,7 +24,7 @@
 
 \item{i, j, ...}{indices specifying elements to extract}
 
-\item{drop}{argument not used for 'tileScheme'}
+\item{drop, exact}{arguments not used for 'tileScheme'}
 }
 \description{
 Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
