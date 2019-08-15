@@ -22,6 +22,8 @@ tileScheme_valid <- function(object){
 }
 
 
+#' @importClassesFrom sp CRS
+
 setClass('tileScheme',
          representation(
            tiles  = 'list',
