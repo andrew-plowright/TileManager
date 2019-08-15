@@ -3,9 +3,12 @@
 \docType{methods}
 \name{[,tileScheme,ANY,ANY-method}
 \alias{[,tileScheme,ANY,ANY-method}
+\alias{[[,tileScheme,ANY,ANY-method}
 \title{Subset}
 \usage{
 \S4method{[}{tileScheme,ANY,ANY}(x, i, j, ..., drop = TRUE)
+
+\S4method{[[}{tileScheme,ANY,ANY}(x, i, j, ...)
 }
 \arguments{
 \item{x}{a 'tileScheme' object}

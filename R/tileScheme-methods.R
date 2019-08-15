@@ -7,6 +7,8 @@
 #' @param drop argument not used for 'tileScheme'
 #'
 #' @export
+#'
+#' @rdname subset
 
 setMethod("[", "tileScheme", function(x, i, j, ...) {
 
@@ -50,7 +52,9 @@ setMethod("[", "tileScheme", function(x, i, j, ...) {
 
 })
 
+
 #' @export
+#' @rdname subset
 
 setMethod("[[", "tileScheme", function(x, i, ...){
 
@@ -69,11 +73,9 @@ setMethod("[[", "tileScheme", function(x, i, ...){
 #'
 #' Print information about a 'tileScheme' object
 #'
-#' @param show a 'tileScheme' object
+#' @param object a 'tileScheme' object
 #'
 #' @export
-
-setGeneric("identical")
 
 setMethod("show", "tileScheme", function(object){
 
@@ -151,6 +153,9 @@ setMethod("length", "tileScheme", function(x) nrow(x@data))
 #' @method identical tileScheme
 
 setGeneric("identical")
+
+#' @export
+#' @rdname identical
 
 setMethod("identical", "tileScheme", function(x, y){
 
