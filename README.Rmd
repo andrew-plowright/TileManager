@@ -10,7 +10,7 @@ TileManager: Tools for creating and detecting tiling schemes for geospatial data
 **Authors:** Andrew Plowright<br/>
 **License:** GPL 3
 
-[![Build Status](https://travis-ci.org/AndyPL22/TileManager.svg?branch=master)](https://travis-ci.org/andrew-plowright/TileManager)
+[![Build Status](https://travis-ci.org/andrew-plowright/TileManager.svg?branch=master)](https://travis-ci.org/andrew-plowright/TileManager)
 
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(
