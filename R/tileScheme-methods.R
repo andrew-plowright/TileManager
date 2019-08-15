@@ -1,15 +1,12 @@
-#' Subset
-#'
-#' Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
-#'
+#' @name [
+#' @docType methods
+#' @rdname subset
+#' @title Subset
+#' @description Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
 #' @param x a 'tileScheme' object
 #' @param i,j,... indices specifying elements to extract
 #' @param drop argument not used for 'tileScheme'
-#'
-#' @rdname subset
-
 #' @export
-#' @rdname subset
 
 setMethod("[", "tileScheme", function(x, i, j, ...) {
 
@@ -53,9 +50,7 @@ setMethod("[", "tileScheme", function(x, i, j, ...) {
 
 })
 
-
 #' @export
-#' @rdname subset
 
 setMethod("[[", "tileScheme", function(x, i, ...){
 
@@ -109,8 +104,8 @@ setMethod("show", "tileScheme", function(object){
 
 setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
 
-#' @export
 #' @rdname plot
+#' @export
 
 setMethod("plot", "tileScheme", function(x, labels = TRUE, add = FALSE, ...){
 
@@ -155,8 +150,8 @@ setMethod("length", "tileScheme", function(x) nrow(x@data))
 
 setGeneric("identical")
 
-#' @export
 #' @rdname identical
+#' @export
 
 setMethod("identical", "tileScheme", function(x, y){
 
