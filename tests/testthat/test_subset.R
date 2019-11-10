@@ -72,6 +72,32 @@ test_that("Subset by tile number and tile name", {
 })
 
 
+test_that("Get and set data",{
+
+  expect_equal(length(ts$tileName), 63)
+  expect_equal(length(ts$row),      63)
+  expect_equal(length(ts$col),      63)
+
+  expect_equal(head(ts$tileName, 1), "R1C1")
+  expect_equal(tail(ts$tileName, 1), "R8C12")
+
+  expect_true(all(grepl("^R2", ts[2,]$tileName)))
+  expect_true(all(grepl("^R4", ts[4,]$tileName)))
+
+  expect_true(all(grepl("C3$", ts[,3]$tileName)))
+  expect_true(all(grepl("C5$", ts[,5]$tileName)))
+
+  expect_equal(length(ts[9]$tileName), 1)
+
+  ts$new_attribute <- letters[1:length(ts)]
+
+  expect_equal(ts$new_attribute[1],  "a")
+  expect_equal(ts$new_attribute[26], "z")
+  expect_equal(ts$new_attribute[27], NA_character_)
+
+})
+
+
 test_that("Expected errors", {
 
   expect_error(ts[1000],        "Tile number index is out of bounds")
@@ -87,6 +113,8 @@ test_that("Expected errors", {
 
   expect_error(ts[c(T,F,T), c(F,T,F)],           "object of type 'S4' is not subsettable")
   expect_error(ts[c("R1", "R2"), c("C1", "C2")], "Cannot use second index when subsetting using tile name")
+
+  expect_error(ts$tileName <- "can't rename", "Cannot modify")
 
 })
 

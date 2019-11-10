@@ -101,6 +101,29 @@ setMethod("[[", signature(x = "tileScheme", i = "character", j = "missing"),
 }
 
 
+#' Get and set data
+#'
+#' @param x a 'tileScheme' object
+#' @param name name of data column
+#' @param value vector of new data values
+#'
+#' @rdname getdata
+#' @export
+
+setMethod("$", "tileScheme", function(x, name) x@data[[name]])
+
+#' @rdname getdata
+#' @export
+
+setMethod("$<-", "tileScheme", function(x, name, value){
+  if(name %in% c("row", "col", "tileName")){
+    stop("Cannot modify 'row', 'col' or 'tileName' columns")
+  }
+
+  x@data[[name]] = value
+  return(x)
+})
+
 
 #' Show
 #'
