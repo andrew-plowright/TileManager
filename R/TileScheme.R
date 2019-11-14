@@ -49,6 +49,7 @@
 
 tileScheme <- function(input, tiledim, cells = FALSE,
                        buffer = 0, bufferspill = FALSE,
+                       round = NA, roundDir = "out",
                        crs = NULL, origin = NULL, removeEmpty = FALSE){
 
   ### CHECK INPUTS ----
@@ -59,7 +60,7 @@ tileScheme <- function(input, tiledim, cells = FALSE,
       if(file.exists(input)){
 
         input <- try(raster::raster(input), silent=TRUE)
-        if(class(input) == "try-error"){stop("Input path for \'input\' must direct to a raster file.")}
+        if(inputClass == "try-error"){stop("Input path for \'input\' must direct to a raster file.")}
 
       }else stop("Invalid file path for \'input\'. File does not exist.")
     }
@@ -67,11 +68,27 @@ tileScheme <- function(input, tiledim, cells = FALSE,
     # Get the extent of the input
     inext <- raster::extent(input)
 
-    if(cells & !(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack"))){
+    # Round extent
+    if(is.numeric(round)){
+
+      if(round <= 0) stop("'round' argument must be positive")
+      if(!roundDir %in% c('in', 'out')) stop("'roundDir' argument must be set to 'in' or 'out'")
+
+      inext <- APfun::AProunder(inext, interval = round, direction = roundDir, snap = 0)
+    }
+
+    # Set acceptable input formats
+    rasterFormats <- c("RasterLayer", "RasterBrick", "RasterStack")
+    spatialFormats <- c(rasterFormats, "SpatialPolygonsDataFrame")
+
+    # Check inputs
+    inputClass <- class(input)
+
+    if(cells & !(inputClass %in% rasterFormats)){
       stop("If 'cells' is set to TRUE, 'input' must be a Raster object.")}
 
-    if(removeEmpty & !(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack"))){
-      stop("If 'removeEmpty' is set to TRUE, 'input' must be a Raster object.")}
+    if(removeEmpty & !(inputClass %in% spatialFormats)){
+      stop("If 'removeEmpty' is set to TRUE, 'input' must be a Raster or a SpatialPolygonsDataFrame object.")}
 
     if(cells & !is.null(origin)){
       stop("If 'cells' is set to TRUE, the 'origin' argument cannot be used")}
@@ -89,7 +106,7 @@ tileScheme <- function(input, tiledim, cells = FALSE,
     # Extract projection from input
     crs <- raster::crs(
       if(!is.null(crs)) crs
-      else if(class(input) %in% c("RasterLayer", "RasterBrick", "RasterStack")) input
+      else if(inputClass %in% spatialFormats) input
       else ""
     )
 
@@ -221,19 +238,24 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
     if(removeEmpty){
 
-      # Determine which tiles hold only NA values
-      empties <- sapply(tileExt, function(tile){
-        all(is.na(suppressWarnings(raster::getValues(raster::crop(input, tile)))))
-        #all(is.na(suppressWarnings(raster::crop(input, tile)[])))
-      })
+      # Get vector if empty tiles
+      empties <- if(inputClass == "SpatialPolygonsDataFrame"){
+
+        # If the input is a polygon, empty tiles are those that do not intersect with its boundaries
+        crs(input) <- NA
+        sapply(tileExt, function(xt) !gIntersects(input, as(xt, "SpatialPolygons")))
+
+      }else if(inputClass %in% rasterFormats){
+
+        # If the input is a raster, empty tiles are those that contain only NA values
+        sapply(tileExt, function(tile){
+          all(is.na(suppressWarnings(raster::getValues(raster::crop(input, tile)))))
+        })
+
+      }else stop("Cannot remove empty tiles using format: '", inputClass, "'")
 
       # If no tiles contain any values, return empty object
-      if(length(empties[empties]) == length(tileExt)){
-        output <- list(NA, NA, NA)
-        names(output) <- c("tilePolygons", "buffPolygons", "nbuffPolygons")
-        warning("No tiles contained any values. All tiles removed.")
-        return(output)
-      }
+      if(all(empties)) stop("All tiles were empty")
 
       # Remove empty tiles
       tileExt <- tileExt[!empties]

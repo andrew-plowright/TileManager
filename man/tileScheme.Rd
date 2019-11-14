@@ -5,8 +5,8 @@
 \title{Tile Scheme}
 \usage{
 tileScheme(input, tiledim, cells = FALSE, buffer = 0,
-  bufferspill = FALSE, crs = NULL, origin = NULL,
-  removeEmpty = FALSE)
+  bufferspill = FALSE, round = NA, roundDir = "out", crs = NULL,
+  origin = NULL, removeEmpty = FALSE)
 }
 \arguments{
 \item{input}{filename (character), Extent, Raster or a vector of four numbers}
