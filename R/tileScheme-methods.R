@@ -142,7 +142,7 @@ setMethod("show", "tileScheme", function(object){
     "tiles     : ", length(object@tiles), "\n",
     "nrow/ncol : ", length(unique(object@data$row)), ",", length(unique(object@data$col)), "\n",
     "buffer    : ", object@buffer, "\n",
-    "variables : ", paste(names(object@data), collapse = ", "),
+    "variables : ", paste(names(object@data), collapse = ", "), "\n",
     sep = ""
   )
 
