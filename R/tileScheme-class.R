@@ -1,3 +1,5 @@
+
+
 tileScheme_valid <- function(object){
 
   checks <- logical()
@@ -21,8 +23,11 @@ tileScheme_valid <- function(object){
   return(all(checks))
 }
 
-
+#' Tile Scheme class
+#'#'
 #' @importClassesFrom sp CRS
+#'
+#' @export
 
 setClass('tileScheme',
          representation(
