@@ -60,7 +60,7 @@ tileScheme <- function(input, tiledim, cells = FALSE,
       if(file.exists(input)){
 
         input <- try(raster::raster(input), silent=TRUE)
-        if(inputClass == "try-error"){stop("Input path for \'input\' must direct to a raster file.")}
+        if(class(input) == "try-error"){stop("Input path for \'input\' must direct to a raster file.")}
 
       }else stop("Invalid file path for \'input\'. File does not exist.")
     }
