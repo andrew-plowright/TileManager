@@ -27,6 +27,8 @@
 #' @param bufferspill logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
 #' buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
 #' of the extent of \code{input}
+#' @param round numeric. Round the extent of the input Extent to the number of digits specified here.
+#' @param roundDir character. The direction of the rounding, either \code{in} for inwards or \code{out} for outwards.
 #' @param crs character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
 #' a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.
 #' @param origin numeric. Optional vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
@@ -242,8 +244,8 @@ tileScheme <- function(input, tiledim, cells = FALSE,
       empties <- if(inputClass == "SpatialPolygonsDataFrame"){
 
         # If the input is a polygon, empty tiles are those that do not intersect with its boundaries
-        crs(input) <- NA
-        sapply(tileExt, function(xt) !gIntersects(input, as(xt, "SpatialPolygons")))
+        raster::crs(input) <- NA
+        sapply(tileExt, function(xt) !rgeos::gIntersects(input, as(xt, "SpatialPolygons")))
 
       }else if(inputClass %in% rasterFormats){
 

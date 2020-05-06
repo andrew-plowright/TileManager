@@ -16,7 +16,7 @@ TileManager: Tools for creating and detecting tiling schemes for geospatial data
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "READMEimgs/",
+  fig.path = "man/figures/",
   fig.height = 4,
   fig.width = 6
 )

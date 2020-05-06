@@ -32,6 +32,10 @@ map units}
 buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
 of the extent of \code{input}}
 
+\item{round}{numeric. Round the extent of the input Extent to the number of digits specified here.}
+
+\item{roundDir}{character. The direction of the rounding, either \code{in} for inwards or \code{out} for outwards.}
+
 \item{crs}{character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
 a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.}
 

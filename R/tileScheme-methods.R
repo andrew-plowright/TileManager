@@ -130,8 +130,6 @@ setMethod("$<-", "tileScheme", function(x, name, value){
 #' Print information about a 'tileScheme' object
 #'
 #' @param object a 'tileScheme' object
-#'
-#' @export
 
 setMethod("show", "tileScheme", function(object){
 

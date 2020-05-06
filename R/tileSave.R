@@ -106,7 +106,7 @@ tileLoad <- function(filepath){
 
     polys <- lapply(c("tile", "buff", "nbuff"), function(tp){
 
-      s <- subset(spdf, type == tp)
+      s <- spdf[spdf[["type"]] == tp,]
       sp::spChFIDs(s) <- s$tileName
       p <- s@polygons
       names(p) <- s$tileName
@@ -115,7 +115,7 @@ tileLoad <- function(filepath){
 
     })
 
-    tileData <- subset(spdf@data, type == "tile", select = c("row", "col", "tileName"))
+    tileData <- spdf@data[spdf[["type"]] == "tile", c("row", "col", "tileName")]
     row.names(tileData) <- tileData$tileName
 
   ### RETURN TILE SCHEME ----

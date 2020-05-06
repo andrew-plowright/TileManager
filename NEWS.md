@@ -1,4 +1,4 @@
-# TileManager 0.3.0
+# TileManager 0.4.0
 
 Major update to TileManager! **This version is not backwards compatible**. View new README file for a tour of the new features.
 
