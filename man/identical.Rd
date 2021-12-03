@@ -21,7 +21,7 @@ identical(
 \arguments{
 \item{x, y}{'tileScheme' object}
 
-\item{num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment, ignore.srcref}{arguments unused for 'tileScheme'}
+\item{num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment, ignore.srcref, extptr.as.ref}{arguments unused for 'tileScheme'}
 }
 \description{
 Determine if two 'tileScheme' objects are identical

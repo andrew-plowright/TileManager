@@ -200,7 +200,7 @@ setMethod("length", "tileScheme", function(x) nrow(x@data))
 #' Determine if two 'tileScheme' objects are identical
 #'
 #' @param x,y 'tileScheme' object
-#' @param num.eq,single.NA,attrib.as.set,ignore.bytecode,ignore.environment,ignore.srcref arguments unused for 'tileScheme'
+#' @param num.eq,single.NA,attrib.as.set,ignore.bytecode,ignore.environment,ignore.srcref,extptr.as.ref arguments unused for 'tileScheme'
 #'
 #' @export
 #'
