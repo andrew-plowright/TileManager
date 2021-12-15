@@ -25,9 +25,10 @@ test_that("'tileScheme' performs as expected using buffers", {
   expect_equal(tile.bydist@nbuffs[[12]]@area, 690.375, tolerance = 0.000001)
 
   # Expected size of the entire tile set
-  expect_equal(rgeos::gArea(tile.bydist[["tiles"]]),  12401.38, tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bydist[["buffs"]]),  19355.38, tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bydist[["nbuffs"]]), 14419.38, tolerance = 0.000001)
+  # NOTE: Suppressing the "CRS object has no comment" warning
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bydist[["tiles"]])),  12401.38, tolerance = 0.000001)
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bydist[["buffs"]])),  19355.38, tolerance = 0.000001)
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bydist[["nbuffs"]])), 14419.38, tolerance = 0.000001)
 
   # Expected number of tiles
   expect_equal(length(tile.bydist@tiles),  12)
@@ -61,9 +62,10 @@ test_that("'tileScheme' performs as expected using 'cells' with no buffers", {
   expect_identical(tile.bycell@nbuffs[[1]]@area, 3750)
 
   # Expected size of the entire tile set
-  expect_equal(rgeos::gArea(tile.bycell[["tiles"]]),  13591.88, tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bycell[["buffs"]]),  13591.88, tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bycell[["nbuffs"]]), 13591.88, tolerance = 0.000001)
+  # NOTE: Suppressing the "CRS object has no comment" warning
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bycell[["tiles"]])),  13591.88, tolerance = 0.000001)
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bycell[["buffs"]])),  13591.88, tolerance = 0.000001)
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bycell[["nbuffs"]])), 13591.88, tolerance = 0.000001)
 
   # Expected number of tiles
   expect_equal(length(tile.bycell@tiles),  5)
@@ -94,9 +96,10 @@ test_that("'tileScheme' performs as expected using 'cells' with buffers", {
   expect_equal(tile.bycell2@nbuffs[[2]]@area,  720.3125, tolerance = 0.000001)
 
   # Expected size of the entire tile set
-  expect_equal(rgeos::gArea(tile.bycell2[["tiles"]]),  11885,    tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bycell2[["buffs"]]),  14576.25, tolerance = 0.000001)
-  expect_equal(rgeos::gArea(tile.bycell2[["nbuffs"]]), 12591.88, tolerance = 0.000001)
+  # NOTE: Suppressing the "CRS object has no comment" warning
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bycell2[["tiles"]])),  11885,    tolerance = 0.000001)
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bycell2[["buffs"]])),  14576.25, tolerance = 0.000001)
+  expect_equal(suppressWarnings(rgeos::gArea(tile.bycell2[["nbuffs"]])), 12591.88, tolerance = 0.000001)
 
   # Expected number of tiles
   expect_equal(length(tile.bycell2@tiles),  22)
