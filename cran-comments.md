@@ -13,4 +13,5 @@ Package has no reverse depencies.
 
 ## Notes
 
-Major new release
+Package was previous removed because of a documentation issue for the 'identical'
+method. That method has now been removed and the issue has been addressed.

@@ -2,7 +2,7 @@ Package: TileManager
 Type: Package
 Title: Tile Manager
 Version: 0.4.1
-Date: 2021-12-03
+Date: 2022-02-01
 Author: Andrew Plowright
 Maintainer: Andrew Plowright <andrew.plowright@alumni.ubc.ca>
 Description: Tools for creating and detecting tiling schemes for geospatial datasets.
