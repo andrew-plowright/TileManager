@@ -1,3 +1,202 @@
+#' Tile Scheme class
+#'#'
+#' @importClassesFrom sp CRS
+#'
+#' @export
+
+setClass(
+  'tileScheme',
+  representation(
+    sf    = 'sf',
+    buffer = 'numeric'
+  ))
+
+#' Subset
+#'
+#' Subset tiles using the single bracket operator. Subset geometry (tiles, buffs or nbuffs) using the double brackets
+#'
+#' @param x a 'tileScheme' object
+#' @param i,j,... indices specifying elements to extract
+#' @param drop,exact arguments not used for 'tileScheme'
+#'
+#' @rdname subset
+#' @export
+setMethod("[", signature(x = "tileScheme", i = "character"),
+          function(x, i, j, ..., drop = TRUE) {
+
+            if(!missing(j)) stop("Cannot use second index when subsetting using tile name")
+
+            w <- match(i, x@sf$tile_name)
+
+            if(any(is.na(w))) stop("Could not find input tile name")
+
+            .subset_ts(x, w)
+
+          })
+
+#' @rdname subset
+#' @export
+setMethod("[", signature(x = "tileScheme", i = "numeric", j = "numeric"),
+          function(x, i, j, ..., drop = TRUE) {
+
+            if(any(!j %in% x@sf$col)) stop("Column number is out of bounds")
+            if(any(!i %in% x@sf$row)) stop("Row number is out of bounds")
+
+            w <- which(x@sf$col %in% j & x@sf$row %in% i)
+
+            .subset_ts(x, w)
+
+          })
+
+#' @rdname subset
+#' @export
+setMethod("[", signature(x = "tileScheme", i = "numeric", j = "missing"),
+          function(x, i, j, ..., drop = TRUE) {
+
+            theCall <- sys.call(-1)
+            narg <- length(theCall) - length(match.call(call=sys.call(-1)))
+
+            # [i,] : select row
+             w <- if(narg > 0){
+
+              if(any(!i %in% x@sf$row)) stop("Row number is out of bounds")
+              which(x@sf$row %in% i)
+
+            # [i] : select tile number
+            }else{
+
+              if(any(!i %in% 1:nrow(x@sf))) stop("Tile number index is out of bounds")
+
+              i
+            }
+
+            .subset_ts(x, w)
+
+          })
+
+#' @rdname subset
+#' @export
+setMethod("[", signature(x = "tileScheme", i = "missing", j = "numeric"),
+          function(x, i, j, ..., drop = TRUE) {
+
+            if(any(!j %in% x@sf$col)) stop("Column number is out of bounds")
+
+            w <- which(x@sf$col %in% j)
+
+            .subset_ts(x, w)
+
+          })
+
+
+#' @rdname subset
+#' @export
+setMethod("[[", signature(x = "tileScheme", i = "character", j = "missing"),
+
+          function(x, i, j, ..., exact=TRUE) {
+
+            if(length(i) != 1 || !i %in% c('tiles', 'buffs', 'nbuffs')){
+              stop("Select one of the following: 'tiles', 'buffs', or 'nbuffs'")
+            }
+
+            sf::st_geometry(x@sf) <- i
+            x@sf[,c('row', 'col', 'tile_name')]
+          })
+
+.subset_ts <- function(x, w){
+
+  if(any(duplicated(w))) stop("Cannot take duplicated indices")
+
+  x@sf <- x@sf[w,]
+
+  return(x)
+}
+
+
+#' Get and set data
+#'
+#' @param x a 'tileScheme' object
+#' @param name name of data column
+#' @param value vector of new data values
+#'
+#' @rdname getdata
+#' @export
+
+setMethod("$", "tileScheme", function(x, name) sf::st_drop_geometry(x@sf)[[name]])
+
+
+#' Show
+#'
+#' Print information about a 'tileScheme' object
+#'
+#' @param object a 'tileScheme' object
+#' @export
+
+setMethod("show", "tileScheme", function(object){
+
+  cat(
+    "class     : tileScheme", "\n",
+    "extent    : ", paste(round(sf::st_bbox(object@sf$nbuffs),5), collapse = ", "),  " (xmin, ymin, xmax, ymax)", "\n",
+    "CRS       : ", sf:::crs_parameters(sf::st_crs(object@sf$tiles) )$Name, "\n",
+    "tiles     : ", nrow(object@sf), "\n",
+    "nrow/ncol : ", length(unique(object@sf$row)), ",", length(unique(object@sf$col)), "\n",
+    "buffer    : ", object@buffer, "\n",
+    sep = ""
+  )
+
+})
+
+
+#' @export
+st_crs.tileScheme = function(x, ...) sf::st_crs(x@sf)
+
+
+#' Plot
+#'
+#' Plot a 'tileScheme' object
+#'
+#' @param x a 'tileScheme' object
+#' @param y argument not used for 'tileScheme' objects
+#' @param labels logical. Add row and column labels
+#' @param add logical. Plot 'tileScheme' on top of existing plot
+#' @param ... arguments t be passed to methods
+#'
+#' @export
+#' @method plot tileScheme
+
+setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
+
+#' @rdname plot
+#' @export
+
+setMethod("plot", "tileScheme", function(x, labels = TRUE, add = FALSE, ...){
+
+  plot(sf::st_geometry(x[["buffs"]]),  border = "red",  lty = 2, add = add)
+  plot(sf::st_geometry(x[["tiles"]]),  border = "blue", lwd = 2, add = TRUE)
+  plot(sf::st_geometry(x[["nbuffs"]]), border = "purple",        add = TRUE)
+
+  # if(labels){
+  #
+  #   r <- x@sf[!duplicated(x$row), ]
+  #   c <- x@sf[!duplicated(x$col), ]
+  #
+  #   for(rl in r$tile_name) text(par()$usr[1], x@tiles[[rl]]@labpt[2], paste0("R",  r[rl,][["row"]]), cex = 0.8, col = "darkgrey", pos = 4, offset = 0.1)
+  #   for(cl in c$tile_name) text(x@tiles[[cl]]@labpt[1], par()$usr[3], paste0("C",  r[cl,][["col"]]), cex = 0.8, col = "darkgrey", pos = 3, offset = 0.1)
+  #
+  # }
+})
+
+
+
+#' Length
+#'
+#' Get the number of a cells contained in a 'tileScheme' object
+#'
+#' @param x 'tileScheme' object
+#'
+#' @export
+
+setMethod("length", "tileScheme", function(x) nrow(x@sf))
+
 #' Tile Scheme
 #'
 #' This function aims to provide an all-in-one tool for creating tiling schemes, which includes options for overlapping
@@ -18,79 +217,61 @@
 #' overlapping areas from buffered tiles in order to reassemble the tiles into a single raster.
 #'
 #'
-#' @param input filename (character), Extent, Raster or a vector of four numbers
-#' @param tiledim numeric. Defines the 'x' and 'y' dimensions of each tile. By default, dimensions are in map
+#' @param x an object from which a SpatExtent can be extracted (SpatRaster, SpatVector, vector of numbers)
+#' @param dim numeric. Defines the 'x' and 'y' dimensions of each tile. By default, dimensions are in map
 #' units. If `cells` is set to TRUE, then dimensions are in number of cells
-#' @param cells logical. If set to TRUE, \code{tiledim} and \code{buffer} dimensions will be in number of cells instead of
+#' @param cells logical. If set to TRUE, \code{dim} and \code{buffer} dimensions will be in number of cells instead of
 #' map units
 #' @param buffer numeric. If set to >0, overlapping buffers will be created around each tile
-#' @param bufferspill logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
-#' buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
-#' of the extent of \code{input}
+#' @param spill logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
+#' buffers of the outer tiles are within the extent of \code{x}. If set to \code{TRUE}, the buffers will extend outside
+#' of the extent of \code{x}
 #' @param round numeric. Round the extent of the input Extent to the number of digits specified here.
-#' @param roundDir character. The direction of the rounding, either \code{in} for inwards or \code{out} for outwards.
+#' @param round_dir character. The direction of the rounding, either \code{in} for inwards or \code{out} for outwards.
 #' @param crs character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
-#' a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.
+#' a CRS from \code{x} (only works if it is a raster). Set to NA to force the output to have no CRS.
 #' @param origin numeric. Optional vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
 #' be aligned. Cannot be used in conjunction with \code{cells}. The coordinates do not need to be within the extent of
-#' \code{input}
-#' @param removeEmpty logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
-#' will be removed from the tiling scheme. Can only be used when \code{input} is a Raster object.
+#' \code{x}
+#' @param remove_empty logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
+#' will be removed from the tiling scheme. Can only be used when \code{x} is a Raster object.
 #'
 #' @return a 'tileScheme' object
 #'
 #' @examples
 #' \dontrun{
-#' ts1 <- tileScheme(CHMdemo, tiledim = c(50,50))
+#' ts1 <- tileScheme(CHMdemo, dim = c(50,50))
 #'
-#' ts2 <- tileScheme(CHMdemo, tiledim = c(100,120), cells = TRUE)
+#' ts2 <- tileScheme(CHMdemo, dim = c(100,120), cells = TRUE)
 #'
-#' ts3 <- tileScheme(CHMdemo, tiledim = 40, buffer = 5, origin = c(0.5, 0.5))
+#' ts3 <- tileScheme(CHMdemo, dim = 40, buffer = 5, origin = c(0.5, 0.5))
 #' }
 #' @export
 
-tileScheme <- function(input, tiledim, cells = FALSE,
-                       buffer = 0, bufferspill = FALSE,
-                       round = NA, roundDir = "out",
-                       crs = NULL, origin = NULL, removeEmpty = FALSE){
+tileScheme <- function(x, dim, cells = FALSE,
+                       buffer = 0, spill = FALSE,
+                       round = NA, round_dir = "out",
+                       crs = NULL, origin = NULL, remove_empty = FALSE){
 
   ### CHECK INPUTS ----
 
-    # If "input" is a file path, attempt to read it as a 'raster' object
-    if(is.character(input)){
-
-      if(file.exists(input)){
-
-        input <- try(raster::raster(input), silent=TRUE)
-        if(class(input) == "try-error"){stop("Input path for \'input\' must direct to a raster file.")}
-
-      }else stop("Invalid file path for \'input\'. File does not exist.")
-    }
-
     # Get the extent of the input
-    inext <- raster::extent(input)
+    inext <- terra::ext(x)
 
     # Round extent
     if(is.numeric(round)){
 
       if(round <= 0) stop("'round' argument must be positive")
-      if(!roundDir %in% c('in', 'out')) stop("'roundDir' argument must be set to 'in' or 'out'")
+      if(!round_dir %in% c('in', 'out')) stop("'round_dir' argument must be set to 'in' or 'out'")
 
-      inext <- APfun::AProunder(inext, interval = round, direction = roundDir, snap = 0)
+      inext <- .ext_round(inext, interval = round, direction = round_dir, snap = 0)
     }
 
-    # Set acceptable input formats
-    rasterFormats <- c("RasterLayer", "RasterBrick", "RasterStack")
-    spatialFormats <- c(rasterFormats, "SpatialPolygonsDataFrame")
+    if(cells & !("SpatRaster" %in% class(x))){
+      stop("If 'cells' is set to TRUE, 'x' must be a 'SpatRaster' object.")}
 
-    # Check inputs
-    inputClass <- class(input)
-
-    if(cells & !(inputClass %in% rasterFormats)){
-      stop("If 'cells' is set to TRUE, 'input' must be a Raster object.")}
-
-    if(removeEmpty & !(inputClass %in% spatialFormats)){
-      stop("If 'removeEmpty' is set to TRUE, 'input' must be a Raster or a SpatialPolygonsDataFrame object.")}
+    if(remove_empty & !( class(x)  %in% c("sf", "SpatRaster"))){
+      stop("If 'remove_empty' is set to TRUE, 'x' must be a 'sf' object")}
 
     if(cells & !is.null(origin)){
       stop("If 'cells' is set to TRUE, the 'origin' argument cannot be used")}
@@ -98,60 +279,62 @@ tileScheme <- function(input, tiledim, cells = FALSE,
     if(buffer < 0){stop("The value of 'buffer' cannot be negative.")}
 
     if(
-      ( cells && buffer >= (min(c(nrow(input), ncol(input))) / 2)) |
-      (!cells && buffer >= (min(c(inext@xmax - inext@xmin, inext@ymax - inext@ymin)) /2))
+      ( cells && buffer >= (min(c(nrow(x), ncol(x))) / 2)) |
+      (!cells && buffer >= (min(c(inext[2] - inext[1], inext[4] - inext[3])) /2))
 
     ){stop("'buffer' cannot be equal to or larger than half of narrowest side of the input extent")}
 
-    if(buffer >= (min(tiledim) / 2)){stop("'buffer' cannot be equal to or larger than half of the narrowest tile side")}
+    if(buffer >= (min(dim) / 2)){stop("'buffer' cannot be equal to or larger than half of the narrowest tile side")}
 
     # Extract projection from input
-    crs <- raster::crs(
-      if(!is.null(crs)) crs
-      else if(inputClass %in% spatialFormats) input
-      else ""
-    )
+    if(is.null(crs)) crs <- terra::crs(x)
 
-    # If a single number is input to 'tiledim', repeat it
-    if(length(tiledim) == 1) tiledim <- rep(tiledim, 2)
+    # If a single number is input to 'dim', repeat it
+    if(length(dim) == 1) dim <- rep(dim, 2)
 
 
   ### DIMENSIONS BY DISTANCE ----
 
     if(!cells){
 
-      # If there is a buffer and "bufferspill" is set to FALSE, shrink the input extent
-      if(buffer != 0 & bufferspill == FALSE) inext <-  inext - buffer * 2
+      # If there is a buffer and "spill" is set to FALSE, shrink the input extent
+      if(buffer != 0 & spill == FALSE) inext <-  inext - buffer
 
       ### CREATE SEQUENCE OF BREAKPOINTS
 
-        # If no origin is set, then compute a sequence of breakpoints starting at the input's xmin and ymax
+        # If no origin is set, then compute a sequence of breakpoints starting at the input's xmin and ymax (top-left corner)
         if(is.null(origin)){
 
-          xSeq <- seq(inext@xmin, inext@xmax, by = tiledim[1])
-          if(xSeq[length(xSeq)] < inext@xmax) xSeq <- c(xSeq, inext@xmax)
+          xSeq <- seq(inext[1], inext[2], by = dim[1])
+          if(xSeq[length(xSeq)] < inext[2]) xSeq <- c(xSeq, inext[2])
 
-          ySeq <- seq(inext@ymax, inext@ymin, by = -tiledim[2])
-          if(ySeq[length(ySeq)] > inext@ymin) ySeq <- c(ySeq, inext@ymin)
+          ySeq <- seq(inext[4], inext[3], by = -dim[2])
+          if(ySeq[length(ySeq)] > inext[3]) ySeq <- c(ySeq, inext[3])
 
         # If a 'origin' coordinate is set, compute a sequence of breakpoints from the origin value, subset those breakpoints
         # according to those that are within the input extent, and then start the sequence with the input's
         # xmin and ymax
         }else{
 
-          xSeq <- seq(APfun::AProunder(inext@xmin, tiledim[1], "up",   snap = origin[1]),
-                      APfun::AProunder(inext@xmax, tiledim[1], "down", snap = origin[1]),
-                      by = tiledim[1])
+          xSnap <- round(origin[1] %% dim[1], 5)
 
-          if(xSeq[1] > inext@xmin) xSeq <- c(inext@xmin, xSeq)
-          if(xSeq[length(xSeq)] < inext@xmax) xSeq <- c(xSeq, inext@xmax)
+          xSeq <- seq(
+            .easy_round(inext[1], dim[1], "up",   snap = xSnap),
+            .easy_round(inext[2], dim[1], "down", snap = xSnap),
+            by = dim[1])
 
-          ySeq <- seq(APfun::AProunder(inext@ymin, tiledim[2], "up",   snap = origin[2]),
-                      APfun::AProunder(inext@ymax, tiledim[2], "down", snap = origin[2]),
-                      by = tiledim[2])
+          if(xSeq[1] > inext[1]) xSeq <- c(inext[1], xSeq)
+          if(xSeq[length(xSeq)] < inext[2]) xSeq <- c(xSeq, inext[2])
 
-          if(ySeq[1] > inext@ymin) ySeq <- c(inext@ymin, ySeq)
-          if(ySeq[length(ySeq)] < inext@ymax) ySeq <- c(ySeq, inext@ymax)
+          ySnap <- round(origin[2] %% dim[2], 5)
+
+          ySeq <- seq(
+            .easy_round(inext[3], dim[2], "up",   snap = ySnap),
+            .easy_round(inext[4], dim[2], "down", snap = ySnap),
+            by = dim[2])
+
+          if(ySeq[1] > inext[3]) ySeq <- c(inext[3], ySeq)
+          if(ySeq[length(ySeq)] < inext[4]) ySeq <- c(ySeq, inext[4])
 
           # Reverse the order of the y Sequence (max to min)
           ySeq <- rev(ySeq)
@@ -164,14 +347,12 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
       # Create series of row and col numbers
       tilesRC <- expand.grid(col = 1:nrow(xInt), row = 1:nrow(yInt))[,2:1]
-      tilesRC$tileName <- paste0("R", tilesRC[,"row"], "C", tilesRC[,"col"])
-      row.names(tilesRC) <- tilesRC$tileName
+      tilesRC$tile_name <- paste0("R", tilesRC[,"row"], "C", tilesRC[,"col"])
+      row.names(tilesRC) <- tilesRC$tile_name
 
       # Join all combinations of intervals
       tileInt <- do.call(rbind, lapply(1:nrow(tilesRC), function(x){
-
-        cbind(xInt[tilesRC[x, "col"], ],
-              yInt[tilesRC[x, "row"], ])
+        cbind(xInt[tilesRC[x, "col"], ], yInt[tilesRC[x, "row"], ])
       }))
 
       # Apply buffer
@@ -179,10 +360,13 @@ tileScheme <- function(input, tiledim, cells = FALSE,
       buffInt[,c("xmin", "ymin")] <- buffInt[,c("xmin", "ymin")] - buffer
       buffInt[,c("xmax", "ymax")] <- buffInt[,c("xmax", "ymax")] + buffer
 
-      # Convert to Extent objects
-      tileExt <- stats::setNames(apply(tileInt, 1, raster::extent), tilesRC$tileName)
-      buffExt <- stats::setNames(apply(buffInt, 1, raster::extent), tilesRC$tileName)
+      # Combine
+      out_sf <- dplyr::bind_cols(
 
+        .exts_to_polys(tileInt, "tiles"),
+        .exts_to_polys(buffInt, "buffs"),
+        tilesRC
+      )
     }
 
 
@@ -192,21 +376,21 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
       # Convert buffer to map units
       bufferCells <- buffer
-      buffer <- buffer * raster::res(input)[1]
+      buffer <- buffer * raster::res(x)[1]
 
       # Set extent of raster in terms of rows and columns
-      rasdim <- c(colmin = 1, colmax = raster::ncol(input), rowmin = 1, rowmax = raster::nrow(input))
+      rasdim <- c(colmin = 1, colmax = raster::ncol(x), rowmin = 1, rowmax = raster::nrow(x))
 
-      # If there is a buffer and "bufferspill" is set to FALSE, shrink the input extent
-      if(buffer != 0 & bufferspill == FALSE){
+      # If there is a buffer and "spill" is set to FALSE, shrink the input extent
+      if(buffer != 0 & spill == FALSE){
         rasdim[c("colmin", "rowmin")] <- rasdim[c("colmin", "rowmin")] + bufferCells
         rasdim[c("colmax", "rowmax")] <- rasdim[c("colmax", "rowmax")] - bufferCells}
 
       # Compute sequence of break points
-      colSeq <- seq(rasdim["colmin"], rasdim["colmax"], by = tiledim[1])
-      if((rasdim["colmax"] - rasdim["colmin"]) %% tiledim[1] != 0){colSeq <- c(colSeq, rasdim["colmax"])}
-      rowSeq <- seq(rasdim["rowmin"], rasdim["rowmax"], by = tiledim[2])
-      if((rasdim["rowmax"] - rasdim["rowmin"]) %% tiledim[2] != 0){rowSeq <- c(rowSeq, rasdim["rowmax"])}
+      colSeq <- seq(rasdim["colmin"], rasdim["colmax"], by = dim[1])
+      if((rasdim["colmax"] - rasdim["colmin"]) %% dim[1] != 0){colSeq <- c(colSeq, rasdim["colmax"])}
+      rowSeq <- seq(rasdim["rowmin"], rasdim["rowmax"], by = dim[2])
+      if((rasdim["rowmax"] - rasdim["rowmin"]) %% dim[2] != 0){rowSeq <- c(rowSeq, rasdim["rowmax"])}
 
       # Assemble break points into intervals
       colInt <-  data.frame(colmin = colSeq[1:(length(colSeq) - 1)],
@@ -216,8 +400,8 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
       # Create series of tile row and tile col numbers
       tilesRC <- expand.grid(col = 1:nrow(colInt), row = 1:nrow(rowInt))[,2:1]
-      tilesRC$tileName <- paste0("R", tilesRC[,"row"], "C", tilesRC[,"col"])
-      row.names(tilesRC) <- tilesRC$tileName
+      tilesRC$tile_name <- paste0("R", tilesRC[,"row"], "C", tilesRC[,"col"])
+      row.names(tilesRC) <- tilesRC$tile_name
 
       # Join all combinations of intervals
       tileInt <- do.call(rbind, lapply(1:nrow(tilesRC), function(x){
@@ -228,8 +412,8 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
       # Convert to extent objects
       tileExt <- apply(tileInt, 1, function(tile){
-        raster::extent(input, tile["rowmin"],  tile["rowmax"],  tile["colmin"],  tile["colmax"])})
-      names(tileExt) <- tilesRC$tileName
+        raster::extent(x, tile["rowmin"],  tile["rowmax"],  tile["colmin"],  tile["colmax"])})
+      names(tileExt) <- tilesRC$tile_name
 
       # Apply buffer
       buffExt <- lapply(tileExt, function(tile){tile + buffer * 2 })
@@ -238,20 +422,25 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
   ### REMOVE EMPTY TILES ----
 
-    if(removeEmpty){
+    sf::st_crs(out_sf) <- crs
+
+    if(remove_empty){
 
       # Get vector if empty tiles
-      empties <- if(inputClass == "SpatialPolygonsDataFrame"){
+      empties <- if('sf' %in% class(x)){
 
         # If the input is a polygon, empty tiles are those that do not intersect with its boundaries
-        raster::crs(input) <- NA
-        sapply(tileExt, function(xt) !rgeos::gIntersects(input, as(xt, "SpatialPolygons")))
+        raster::crs(x) <- NA
+        sapply(tileExt, function(xt) !rgeos::gIntersects(x, as(xt, "SpatialPolygons")))
 
-      }else if(inputClass %in% rasterFormats){
+      }else if('SpatRaster' %in% class(x)){
 
         # If the input is a raster, empty tiles are those that contain only NA values
-        sapply(tileExt, function(tile){
-          all(is.na(suppressWarnings(raster::getValues(raster::crop(input, tile)))))
+        sapply(1:nrow(out_sf), function(i){
+
+          cropped_tile <- terra::crop(x,  out_sf[i, "tiles"])
+
+          all(!is.finite(terra::values(cropped_tile)))
         })
 
       }else stop("Cannot remove empty tiles using format: '", inputClass, "'")
@@ -260,28 +449,21 @@ tileScheme <- function(input, tiledim, cells = FALSE,
       if(all(empties)) stop("All tiles were empty")
 
       # Remove empty tiles
-      tileExt <- tileExt[!empties]
-      buffExt <- buffExt[!empties]
-      tilesRC <- tilesRC[!empties,]
-    }
+      out_sf <- out_sf[!empties, ]
 
+    }
 
   ### CONVERT TO POLYGONS ----
 
-    tilePoly  <- .extents_to_polygons(tileExt)
-    buffPoly  <- .extents_to_polygons(buffExt)
-    nbuffPoly <- .nonoverlappingBuffers(tileExt, buffExt, tilesRC)
+    out_sf <- .nonoverlappingBuffers(out_sf)
 
 
   ### RETURN OUTPUT ----
 
     new("tileScheme",
-        tiles  = tilePoly,
-        buffs  = buffPoly,
-        nbuffs = nbuffPoly,
-        buffer = buffer,
-        crs    = crs,
-        data   = tilesRC)
+        sf = out_sf,
+        buffer = buffer
+    )
 }
 
 
@@ -292,11 +474,11 @@ tileScheme <- function(input, tiledim, cells = FALSE,
     ext <- extents[[extName]]
 
     p <- rbind(
-      c(ext@xmin, ext@ymin),
-      c(ext@xmin, ext@ymax),
-      c(ext@xmax, ext@ymax),
-      c(ext@xmax, ext@ymin),
-      c(ext@xmin, ext@ymin) )
+      c(ext[1], ext[3]),
+      c(ext[1], ext[4]),
+      c(ext[2], ext[4]),
+      c(ext[2], ext[3]),
+      c(ext[1], ext[3]) )
 
     sp::Polygons(list(sp::Polygon(p)), extName)
 
@@ -309,90 +491,153 @@ tileScheme <- function(input, tiledim, cells = FALSE,
 
 
 
-.nonoverlappingBuffers <- function(tileExt, buffExt, tilesRC){
+.nonoverlappingBuffers <- function(out_sf){
 
-  neibrowcol <- expand.grid(c(-1,0,1), c(-1,0,1))[-5,]
-  row.names(neibrowcol) <- c("topleft", "top", "topright", "left", "right", "bottomleft", "bottom", "bottomright")
-  colnames(neibrowcol)  <- c("col", "row")
+  neib_win <- expand.grid(c(-1,0,1), c(-1,0,1))[-5,]
+  row.names(neib_win) <- c("topleft", "top", "topright", "left", "right", "bottomleft", "bottom", "bottomright")
+  colnames(neib_win)  <- c("col", "row")
 
-  neibgrid <- data.frame(
+  neib_crn <- data.frame(
     corner = c("topleft", "topright", "bottomright", "bottomleft"),
     hor    = c("left", "right", "right", "left"),
     vert   = c("top", "top", "bottom", "bottom"),
     stringsAsFactors = FALSE)
 
 
-  ps <- lapply(1:nrow(tilesRC), function(tileNum){
+  polys <- lapply(1:nrow(out_sf), function(j){
 
-    tileColRow <- as.numeric(tilesRC[tileNum, c("col", "row")])
-    tileEx     <- tileExt[[tileNum]]
-    buffEx     <- buffExt[[tileNum]]
+    tile_bbox <- sf::st_bbox(out_sf[["tiles"]][[j]])
+    buff_bbox <- sf::st_bbox(out_sf[["buffs"]][[j]])
 
     # Get row/col of potential neighbors
-    neibrowcol.tile <- as.data.frame(t(apply(neibrowcol, 1, function(r) r + tileColRow)))
+    neib_rc <- cbind(
+      neib_win["col"] + out_sf[["col"]][j],
+      neib_win["row"] + out_sf[["row"]][j]
+    )
 
     # Determine which neighbors exist
-    neibrowcol.tile$exists <- utils::tail(duplicated(rbind(tilesRC[,c("col", "row")], neibrowcol.tile)),8)
-    neibgrid.tile <- cbind(neibgrid, data.frame(
-      cornerExists = neibrowcol.tile[neibgrid$corner, "exists"],
-      horExists    = neibrowcol.tile[neibgrid$hor,    "exists"],
-      vertExists   = neibrowcol.tile[neibgrid$vert,   "exists"])
+    neib_rc$exists <- utils::tail(duplicated(rbind(sf::st_drop_geometry(out_sf[,c("col", "row")]), neib_rc)),8)
+    neib_crn_ex <- cbind(neib_crn, data.frame(
+      cornerExists = neib_rc[neib_crn$corner, "exists"],
+      horExists    = neib_rc[neib_crn$hor,    "exists"],
+      vertExists   = neib_rc[neib_crn$vert,   "exists"])
       )
 
     # Get positions of tile sides
-    dims.tile <- data.frame(
-      buff   = buffEx[],
-      unbuff = tileEx[],
-      diff   = buffEx[] - tileEx[],
-      row.names = c("left", "right", "bottom", "top"))
+    dim_tile <- data.frame(
+      buff   = buff_bbox[],
+      unbuff = tile_bbox[],
+      diff   = buff_bbox[] - tile_bbox[],
+      row.names = c("left", "bottom", "right", "top"))
 
-    polyPts <- do.call(rbind, lapply(1:4, function(x){
+    crn_pts <- do.call(rbind, lapply(1:4, function(i){
 
       # Get corner
-      crn <- neibgrid.tile[x,]
+      crn <- neib_crn_ex[i,]
 
-      dims.crn <- dims.tile[c(crn[,"hor"], crn[,"vert"]),]
+      dims.crn <- dim_tile[c(crn[,"hor"], crn[,"vert"]),]
 
-      if(crn[,"horExists"] & crn[,"vertExists"]){
+      if((crn[,"horExists"] & crn[,"vertExists"]) | !crn[,"cornerExists"]) {
 
         # Straight corner
         return(dims.crn[cbind(1:2, as.numeric(c(crn[,"horExists"], crn[,"vertExists"])) + 1)])
 
       }else{
 
-        if(crn[,"cornerExists"]){
-
-          if(crn[,"horExists"]){
-            horPt <- dims.crn[cbind(1:2, c(2,2))]
-          }else{
-            horPt <- dims.crn[cbind(1:2, c(1,2))] - c(0,dims.crn[crn[,"vert"], "diff"])
-          }
-          if(crn[,"vertExists"]){
-            vertPt <- dims.crn[cbind(1:2, c(2,2))]
-          }else{
-            vertPt <- dims.crn[cbind(1:2, c(2,1))] - c(dims.crn[crn[,"hor"], "diff"],0)
-          }
-          if(crn[,"corner"] %in% c("topleft", "bottomright")){
-            return(rbind(horPt, vertPt))
-          }else{
-            return(rbind(vertPt, horPt))
-          }
-
+        if(crn[,"horExists"]){
+          horPt <- dims.crn[cbind(1:2, c(2,2))]
         }else{
-
-          # Straight corner
-          return(dims.crn[cbind(1:2, as.numeric(c(crn[,"horExists"], crn[,"vertExists"])) + 1)])
+          horPt <- dims.crn[cbind(1:2, c(1,2))] - c(0,dims.crn[crn[,"vert"], "diff"])
+        }
+        if(crn[,"vertExists"]){
+          vertPt <- dims.crn[cbind(1:2, c(2,2))]
+        }else{
+          vertPt <- dims.crn[cbind(1:2, c(2,1))] - c(dims.crn[crn[,"hor"], "diff"],0)
+        }
+        if(crn[,"corner"] %in% c("topleft", "bottomright")){
+          return(rbind(horPt, vertPt))
+        }else{
+          return(rbind(vertPt, horPt))
         }
       }
     }))
 
-    row.names(polyPts) <- 1:nrow(polyPts)
-    return(sp::Polygons(list(sp::Polygon(polyPts)), ID = tilesRC[tileNum, "tileName"]))
-
+    sf::st_polygon(list(
+      rbind(crn_pts, crn_pts[1,])
+    ))
   })
 
-  for(i in 1:length(ps)) ps[[i]]@plotOrder <- i
+  # Combine with input sf
+  dplyr::bind_cols(out_sf, nbuffs = sf::st_as_sfc(polys))
 
-  return(ps)
 }
 
+
+.ext_round <- function (inext, interval, direction = "up", snap = 0) {
+
+  if (sign(interval) != 1) stop("'interval' must be set to a positive inext")
+
+  snap_base <- snap %% interval
+  snap_base <- round(snap_base, 5)
+
+
+  if(direction == "in"){
+    min_dir <- "up"
+    max_dir <- "down"
+  }else if(direction == "out"){
+    min_dir <- "down"
+    max_dir <- "up"
+  }
+
+  terra::ext(
+    .easy_round(inext[1], interval, min_dir, snap_base),
+    .easy_round(inext[2], interval, max_dir, snap_base),
+    .easy_round(inext[3], interval, min_dir, snap_base),
+    .easy_round(inext[4], interval, max_dir, snap_base)
+  )
+
+}
+
+
+.easy_round <- function (value, interval, direction, snap.base){
+
+  if (snap.base == 0) {
+    if (direction == "closest")
+      return(interval * round2(value/interval, 0))
+    if (direction == "up")
+      return(interval * ceiling(value/interval))
+    if (direction == "down")
+      return(interval * floor(value/interval))
+  }
+  else {
+    value.ceiling <- interval * ceiling(value/interval)
+    int.snap <- round(c(value.ceiling - interval * 2, value.ceiling -
+                          interval, value.ceiling) + snap.base, 5)
+    if (0 %in% (value - int.snap)) {
+      return(value)
+    }
+    else {
+      int.snap <- int.snap[-which.max(abs(value - int.snap))]
+      if (direction == "closest") {
+        return(int.snap[which.min(abs(value - int.snap))])
+      }
+      if (direction == "up") {
+        return(int.snap[2])
+      }
+      if (direction == "down") {
+        return(int.snap[1])
+      }
+    }
+  }
+}
+
+
+.exts_to_polys <- function(tbl, name){
+
+  polys <- dplyr::bind_rows(apply(tbl, 1, function(x){
+    sf::st_sf(sf::st_as_sfc(sf::st_bbox(terra::ext(x))))
+  }))
+
+  sf::st_geometry(polys) <- name
+  return(polys)
+}

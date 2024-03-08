@@ -1,54 +1,60 @@
-library(TileManager)
+if(basename(getwd()) != "testthat") setwd(file.path(getwd(), "tests", "testthat"))
 
 context("Tests for 'tileScheme'")
 
 ### LOAD TEST DATA
 
-data(CHMdemo)
+CHMdemo <- terra::rast("test_data/CHMdemo.tif")
+
 emptyRas <- suppressWarnings(raster::setValues(CHMdemo, NA))
-extDemo <- raster::extent(CHMdemo)
+extDemo <- terra::ext(CHMdemo)
 
 ### PERFORM TESTS
 
 test_that("'tileScheme' performs as expected using buffers", {
 
-  tile.bydist <- tileScheme(CHMdemo, tiledim = c(30,40), buffer = 4, removeEmpty = TRUE)
+  ts <- tileScheme(CHMdemo, dim = c(30,40), buffer = 4, remove_empty = TRUE)
+
+  tile_areas <- as.numeric(sf::st_area(ts[["tiles"]]))
+  buff_areas <- as.numeric(sf::st_area(ts[["buffs"]]))
+  nbuff_areas <- as.numeric(sf::st_area(ts[["nbuffs"]]))
 
   # Expected size of a the first tile
-  expect_identical(tile.bydist@tiles[[1]]@area,  1200)
-  expect_identical(tile.bydist@buffs[[1]]@area,  1824)
-  expect_identical(tile.bydist@nbuffs[[1]]@area, 1496)
+  expect_identical(tile_areas[1],  1200)
+  expect_identical(buff_areas[1],  1824)
+  expect_identical(nbuff_areas[1], 1496)
 
   # Expectecd size of non-overlapping buffer tiles
-  expect_equal(tile.bydist@nbuffs[[3]]@area,  1488, tolerance = 0.000001)
-  expect_equal(tile.bydist@nbuffs[[7]]@area,  1480, tolerance = 0.000001)
-  expect_equal(tile.bydist@nbuffs[[12]]@area, 690.375, tolerance = 0.000001)
+  expect_equal(nbuff_areas[3],  1488, tolerance = 0.000001)
+  expect_equal(nbuff_areas[7],  1480, tolerance = 0.000001)
+  expect_equal(nbuff_areas[12], 690.375, tolerance = 0.000001)
 
   # Expected size of the entire tile set
   # NOTE: Suppressing the "CRS object has no comment" warning
-  expect_equal(suppressWarnings(rgeos::gArea(tile.bydist[["tiles"]])),  12401.38, tolerance = 0.000001)
-  expect_equal(suppressWarnings(rgeos::gArea(tile.bydist[["buffs"]])),  19355.38, tolerance = 0.000001)
-  expect_equal(suppressWarnings(rgeos::gArea(tile.bydist[["nbuffs"]])), 14419.38, tolerance = 0.000001)
+  expect_equal(sum(tile_areas),  12401.38, tolerance = 0.000001)
+  expect_equal(sum(buff_areas),  19355.38, tolerance = 0.000001)
+  expect_equal(sum(nbuff_areas), 14419.38, tolerance = 0.000001)
 
   # Expected number of tiles
-  expect_equal(length(tile.bydist@tiles),  12)
-  expect_equal(length(tile.bydist@buffs),  12)
-  expect_equal(length(tile.bydist@nbuffs), 12)
+  expect_equal(length(ts),  12)
 
   # Expected tile order
-  expect_equal(tile.bydist[1]@data$tileName,   "R1C1")
-  expect_equal(tile.bydist[2]@data$tileName,   "R1C2")
-  expect_equal(tile.bydist[1,1]@data$tileName, "R1C1")
-  expect_equal(tile.bydist[1,2]@data$tileName, "R1C2")
-  expect_equal(tile.bydist[2,1]@data$tileName, "R2C1")
+  expect_equal(ts[1]@sf$tile_name,   "R1C1")
+  expect_equal(ts[2]@sf$tile_name,   "R1C2")
+  expect_equal(ts[1,1]@sf$tile_name, "R1C1")
+  expect_equal(ts[1,2]@sf$tile_name, "R1C2")
+  expect_equal(ts[2,1]@sf$tile_name, "R2C1")
+
+  # CRS
+  expect_equal(sf::st_crs(ts), sf::st_crs(32611))
 
 })
 
 test_that("'tileScheme' performs as expected using an Extent object", {
 
-  tile.fromext <- tileScheme(extDemo, tiledim = c(30,30))
+  ts <- tileScheme(extDemo, dim = c(30,30))
 
-  expect_equal(length(tile.fromext@tiles), 20)
+  expect_equal(length(ts), 20)
 })
 
 

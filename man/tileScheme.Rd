@@ -5,46 +5,46 @@
 \title{Tile Scheme}
 \usage{
 tileScheme(
-  input,
-  tiledim,
+  x,
+  dim,
   cells = FALSE,
   buffer = 0,
-  bufferspill = FALSE,
+  spill = FALSE,
   round = NA,
-  roundDir = "out",
+  round_dir = "out",
   crs = NULL,
   origin = NULL,
-  removeEmpty = FALSE
+  remove_empty = FALSE
 )
 }
 \arguments{
-\item{input}{filename (character), Extent, Raster or a vector of four numbers}
+\item{x}{an object from which a SpatExtent can be extracted (SpatRaster, SpatVector, vector of numbers)}
 
-\item{tiledim}{numeric. Defines the 'x' and 'y' dimensions of each tile. By default, dimensions are in map
+\item{dim}{numeric. Defines the 'x' and 'y' dimensions of each tile. By default, dimensions are in map
 units. If `cells` is set to TRUE, then dimensions are in number of cells}
 
-\item{cells}{logical. If set to TRUE, \code{tiledim} and \code{buffer} dimensions will be in number of cells instead of
+\item{cells}{logical. If set to TRUE, \code{dim} and \code{buffer} dimensions will be in number of cells instead of
 map units}
 
 \item{buffer}{numeric. If set to >0, overlapping buffers will be created around each tile}
 
-\item{bufferspill}{logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
-buffers of the outer tiles are within the extent of \code{input}. If set to \code{TRUE}, the buffers will extend outside
-of the extent of \code{input}}
+\item{spill}{logical. Default is \code{FALSE}, in which case the tiling grid will be pushed inwards so that the
+buffers of the outer tiles are within the extent of \code{x}. If set to \code{TRUE}, the buffers will extend outside
+of the extent of \code{x}}
 
 \item{round}{numeric. Round the extent of the input Extent to the number of digits specified here.}
 
-\item{roundDir}{character. The direction of the rounding, either \code{in} for inwards or \code{out} for outwards.}
+\item{round_dir}{character. The direction of the rounding, either \code{in} for inwards or \code{out} for outwards.}
 
 \item{crs}{character. PROJ4 string defining output coordinate reference system (CRS). If set to NULL, the function will attempt to get
-a CRS from \code{input} (only works if it is a raster). Set to NA to force the output to have no CRS.}
+a CRS from \code{x} (only works if it is a raster). Set to NA to force the output to have no CRS.}
 
 \item{origin}{numeric. Optional vector of two numbers corresponding to a pair of coordinates to which the tiling scheme will
 be aligned. Cannot be used in conjunction with \code{cells}. The coordinates do not need to be within the extent of
-\code{input}}
+\code{x}}
 
-\item{removeEmpty}{logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
-will be removed from the tiling scheme. Can only be used when \code{input} is a Raster object.}
+\item{remove_empty}{logical. Default is \code{FALSE}. If set to \code{TRUE}, tiles containing only \code{NA} cell values
+will be removed from the tiling scheme. Can only be used when \code{x} is a Raster object.}
 }
 \value{
 a 'tileScheme' object
@@ -71,10 +71,10 @@ overlapping areas from buffered tiles in order to reassemble the tiles into a si
 
 \examples{
 \dontrun{
-ts1 <- tileScheme(CHMdemo, tiledim = c(50,50))
+ts1 <- tileScheme(CHMdemo, dim = c(50,50))
 
-ts2 <- tileScheme(CHMdemo, tiledim = c(100,120), cells = TRUE)
+ts2 <- tileScheme(CHMdemo, dim = c(100,120), cells = TRUE)
 
-ts3 <- tileScheme(CHMdemo, tiledim = 40, buffer = 5, origin = c(0.5, 0.5))
+ts3 <- tileScheme(CHMdemo, dim = 40, buffer = 5, origin = c(0.5, 0.5))
 }
 }

@@ -1,4 +1,3 @@
-library(TileManager)
 
 context("Subset tests")
 

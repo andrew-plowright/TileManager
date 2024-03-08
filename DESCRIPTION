@@ -1,8 +1,8 @@
 Package: TileManager
 Type: Package
 Title: Tile Manager
-Version: 0.4.1
-Date: 2022-02-01
+Version: 1.0.0
+Date: 2024-03-08
 Author: Andrew Plowright
 Maintainer: Andrew Plowright <andrew.plowright@alumni.ubc.ca>
 Description: Tools for creating and detecting tiling schemes for geospatial datasets.
@@ -10,14 +10,11 @@ Depends: R (>= 3.5.0)
 License: GPL (>= 3)
 LazyData: TRUE
 Imports:
-    APfun,
-    raster,
-    rgeos,
-    sp,
+    sf,
+    terra,
     utils,
     methods,
     graphics,
-    stats,
-    XML
-RoxygenNote: 7.1.2
+    stats
+RoxygenNote: 7.3.1
 Suggests: testthat
