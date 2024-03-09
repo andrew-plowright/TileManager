@@ -21,86 +21,91 @@ setClass(
 #'
 #' @rdname subset
 #' @export
-setMethod("[", signature(x = "tileScheme", i = "character"),
-          function(x, i, j, ..., drop = TRUE) {
+setMethod(
+  "[", signature(x = "tileScheme", i = "character"),
+  function(x, i, j, ..., drop = TRUE) {
 
-            if(!missing(j)) stop("Cannot use second index when subsetting using tile name")
+    if(!missing(j)) stop("Cannot use second index when subsetting using tile name")
 
-            w <- match(i, x@sf$tile_name)
+    w <- match(i, x@sf$tile_name)
 
-            if(any(is.na(w))) stop("Could not find input tile name")
+    if(any(is.na(w))) stop("Could not find input tile name")
 
-            .subset_ts(x, w)
+    .subset_ts(x, w)
 
-          })
-
-#' @rdname subset
-#' @export
-setMethod("[", signature(x = "tileScheme", i = "numeric", j = "numeric"),
-          function(x, i, j, ..., drop = TRUE) {
-
-            if(any(!j %in% x@sf$col)) stop("Column number is out of bounds")
-            if(any(!i %in% x@sf$row)) stop("Row number is out of bounds")
-
-            w <- which(x@sf$col %in% j & x@sf$row %in% i)
-
-            .subset_ts(x, w)
-
-          })
+  })
 
 #' @rdname subset
 #' @export
-setMethod("[", signature(x = "tileScheme", i = "numeric", j = "missing"),
-          function(x, i, j, ..., drop = TRUE) {
+setMethod(
+  "[", signature(x = "tileScheme", i = "numeric", j = "numeric"),
+  function(x, i, j, ..., drop = TRUE) {
 
-            theCall <- sys.call(-1)
-            narg <- length(theCall) - length(match.call(call=sys.call(-1)))
+    if(any(!j %in% x@sf$col)) stop("Column number is out of bounds")
+    if(any(!i %in% x@sf$row)) stop("Row number is out of bounds")
 
-            # [i,] : select row
-             w <- if(narg > 0){
+    w <- which(x@sf$col %in% j & x@sf$row %in% i)
 
-              if(any(!i %in% x@sf$row)) stop("Row number is out of bounds")
-              which(x@sf$row %in% i)
+    .subset_ts(x, w)
 
-            # [i] : select tile number
-            }else{
-
-              if(any(!i %in% 1:nrow(x@sf))) stop("Tile number index is out of bounds")
-
-              i
-            }
-
-            .subset_ts(x, w)
-
-          })
+  })
 
 #' @rdname subset
 #' @export
-setMethod("[", signature(x = "tileScheme", i = "missing", j = "numeric"),
-          function(x, i, j, ..., drop = TRUE) {
+setMethod(
+  "[", signature(x = "tileScheme", i = "numeric", j = "missing"),
+  function(x, i, j, ..., drop = TRUE) {
 
-            if(any(!j %in% x@sf$col)) stop("Column number is out of bounds")
+    theCall <- sys.call(-1)
+    narg <- length(theCall) - length(match.call(call=sys.call(-1)))
 
-            w <- which(x@sf$col %in% j)
+    # [i,] : select row
+    w <- if(narg > 0){
 
-            .subset_ts(x, w)
+      if(any(!i %in% x@sf$row)) stop("Row number is out of bounds")
+      which(x@sf$row %in% i)
 
-          })
+      # [i] : select tile number
+    }else{
+
+      if(any(!i %in% 1:nrow(x@sf))) stop("Tile number index is out of bounds")
+
+      i
+    }
+
+    .subset_ts(x, w)
+
+  })
+
+#' @rdname subset
+#' @export
+setMethod(
+  "[", signature(x = "tileScheme", i = "missing", j = "numeric"),
+  function(x, i, j, ..., drop = TRUE) {
+
+    if(any(!j %in% x@sf$col)) stop("Column number is out of bounds")
+
+    w <- which(x@sf$col %in% j)
+
+    .subset_ts(x, w)
+
+  })
 
 
 #' @rdname subset
 #' @export
-setMethod("[[", signature(x = "tileScheme", i = "character", j = "missing"),
+setMethod(
+  "[[", signature(x = "tileScheme", i = "character", j = "missing"),
 
-          function(x, i, j, ..., exact=TRUE) {
+  function(x, i, j, ..., exact=TRUE) {
 
-            if(length(i) != 1 || !i %in% c('tiles', 'buffs', 'nbuffs')){
-              stop("Select one of the following: 'tiles', 'buffs', or 'nbuffs'")
-            }
+    if(length(i) != 1 || !i %in% c('tiles', 'buffs', 'nbuffs')){
+      stop("Select one of the following: 'tiles', 'buffs', or 'nbuffs'")
+    }
 
-            sf::st_geometry(x@sf) <- i
-            x@sf[,c('row', 'col', 'tile_name')]
-          })
+    sf::st_geometry(x@sf) <- i
+    x@sf[,c('row', 'col', 'tile_name')]
+  })
 
 .subset_ts <- function(x, w){
 
@@ -121,7 +126,8 @@ setMethod("[[", signature(x = "tileScheme", i = "character", j = "missing"),
 #' @rdname getdata
 #' @export
 
-setMethod("$", "tileScheme", function(x, name) sf::st_drop_geometry(x@sf)[[name]])
+setMethod(
+  "$", "tileScheme", function(x, name) sf::st_drop_geometry(x@sf)[[name]])
 
 
 #' Show
@@ -131,19 +137,20 @@ setMethod("$", "tileScheme", function(x, name) sf::st_drop_geometry(x@sf)[[name]
 #' @param object a 'tileScheme' object
 #' @export
 
-setMethod("show", "tileScheme", function(object){
+setMethod(
+  "show", "tileScheme", function(object){
 
-  cat(
-    "class     : tileScheme", "\n",
-    "extent    : ", paste(round(sf::st_bbox(object@sf$nbuffs),5), collapse = ", "),  " (xmin, ymin, xmax, ymax)", "\n",
-    "CRS       : ", sf:::crs_parameters(sf::st_crs(object@sf$tiles) )$Name, "\n",
-    "tiles     : ", nrow(object@sf), "\n",
-    "nrow/ncol : ", length(unique(object@sf$row)), ",", length(unique(object@sf$col)), "\n",
-    "buffer    : ", object@buffer, "\n",
-    sep = ""
-  )
+    cat(
+      "class     : tileScheme", "\n",
+      "extent    : ", paste(round(sf::st_bbox(object@sf$nbuffs),5), collapse = ", "),  " (xmin, ymin, xmax, ymax)", "\n",
+      "CRS       : ", sf:::crs_parameters(sf::st_crs(object@sf$tiles) )$Name, "\n",
+      "tiles     : ", nrow(object@sf), "\n",
+      "nrow/ncol : ", length(unique(object@sf$row)), ",", length(unique(object@sf$col)), "\n",
+      "buffer    : ", object@buffer, "\n",
+      sep = ""
+    )
 
-})
+  })
 
 
 #' @export
@@ -258,6 +265,9 @@ tileScheme <- function(x, dim, cells = FALSE,
     # Get the extent of the input
     inext <- terra::ext(x)
 
+    # Get input class
+    inclass <- class(x)[1]
+
     # Round extent
     if(is.numeric(round)){
 
@@ -267,10 +277,10 @@ tileScheme <- function(x, dim, cells = FALSE,
       inext <- .ext_round(inext, interval = round, direction = round_dir, snap = 0)
     }
 
-    if(cells & !("SpatRaster" %in% class(x))){
+    if(cells & (inclass != "SpatRaster")){
       stop("If 'cells' is set to TRUE, 'x' must be a 'SpatRaster' object.")}
 
-    if(remove_empty & !( class(x)  %in% c("sf", "SpatRaster"))){
+    if(remove_empty & !(inclass %in% c("sf", "SpatRaster"))){
       stop("If 'remove_empty' is set to TRUE, 'x' must be a 'sf' object")}
 
     if(cells & !is.null(origin)){
@@ -292,6 +302,7 @@ tileScheme <- function(x, dim, cells = FALSE,
     # If a single number is input to 'dim', repeat it
     if(length(dim) == 1) dim <- rep(dim, 2)
 
+    if(!is.null(origin) && length(origin) != 2) stop("'origin' should be a vector of two numbers")
 
   ### DIMENSIONS BY DISTANCE ----
 
@@ -351,22 +362,11 @@ tileScheme <- function(x, dim, cells = FALSE,
       row.names(tilesRC) <- tilesRC$tile_name
 
       # Join all combinations of intervals
-      tileInt <- do.call(rbind, lapply(1:nrow(tilesRC), function(x){
-        cbind(xInt[tilesRC[x, "col"], ], yInt[tilesRC[x, "row"], ])
-      }))
+      tile_exts <- lapply(1:nrow(tilesRC), function(i){
 
-      # Apply buffer
-      buffInt <- tileInt
-      buffInt[,c("xmin", "ymin")] <- buffInt[,c("xmin", "ymin")] - buffer
-      buffInt[,c("xmax", "ymax")] <- buffInt[,c("xmax", "ymax")] + buffer
+        terra::ext(as.numeric(cbind(xInt[tilesRC[i, "col"], ], yInt[tilesRC[i, "row"], ])))
 
-      # Combine
-      out_sf <- dplyr::bind_cols(
-
-        .exts_to_polys(tileInt, "tiles"),
-        .exts_to_polys(buffInt, "buffs"),
-        tilesRC
-      )
+      })
     }
 
 
@@ -376,15 +376,16 @@ tileScheme <- function(x, dim, cells = FALSE,
 
       # Convert buffer to map units
       bufferCells <- buffer
-      buffer <- buffer * raster::res(x)[1]
+      buffer <- buffer * terra::res(x)[1]
 
       # Set extent of raster in terms of rows and columns
-      rasdim <- c(colmin = 1, colmax = raster::ncol(x), rowmin = 1, rowmax = raster::nrow(x))
+      rasdim <- c(colmin = 1, colmax = terra::ncol(x), rowmin = 1, rowmax = terra::nrow(x))
 
       # If there is a buffer and "spill" is set to FALSE, shrink the input extent
       if(buffer != 0 & spill == FALSE){
         rasdim[c("colmin", "rowmin")] <- rasdim[c("colmin", "rowmin")] + bufferCells
-        rasdim[c("colmax", "rowmax")] <- rasdim[c("colmax", "rowmax")] - bufferCells}
+        rasdim[c("colmax", "rowmax")] <- rasdim[c("colmax", "rowmax")] - bufferCells
+      }
 
       # Compute sequence of break points
       colSeq <- seq(rasdim["colmin"], rasdim["colmax"], by = dim[1])
@@ -404,36 +405,43 @@ tileScheme <- function(x, dim, cells = FALSE,
       row.names(tilesRC) <- tilesRC$tile_name
 
       # Join all combinations of intervals
-      tileInt <- do.call(rbind, lapply(1:nrow(tilesRC), function(x){
+      tile_exts <- lapply(1:nrow(tilesRC), function(i){
 
-        cbind(colInt[tilesRC[x, "col"], ],
-              rowInt[tilesRC[x, "row"], ])
-      }))
+        col <- tilesRC[i, "col"]
+        row <- tilesRC[i, "row"]
 
-      # Convert to extent objects
-      tileExt <- apply(tileInt, 1, function(tile){
-        raster::extent(x, tile["rowmin"],  tile["rowmax"],  tile["colmin"],  tile["colmax"])})
-      names(tileExt) <- tilesRC$tile_name
+        terra::ext(x[rowInt[row, "rowmin"]:rowInt[row, "rowmax"], colInt[col,"colmin"]:colInt[col,"colmax"], drop=FALSE])
 
-      # Apply buffer
-      buffExt <- lapply(tileExt, function(tile){tile + buffer * 2 })
+      })
+
     }
 
+  ### Combine ----
+
+    # Apply buffer
+    buff_exts <- lapply(tile_exts, function(tile_ext) tile_ext + buffer)
+
+    # Combine into 'sf' object
+    out_sf <- dplyr::bind_cols(
+
+      .exts_to_polys(tile_exts, "tiles", crs),
+      .exts_to_polys(buff_exts, "buffs", crs),
+      tilesRC
+    )
 
   ### REMOVE EMPTY TILES ----
 
-    sf::st_crs(out_sf) <- crs
 
     if(remove_empty){
 
       # Get vector if empty tiles
-      empties <- if('sf' %in% class(x)){
+      empties <- if(inclass == 'sf'){
 
         # If the input is a polygon, empty tiles are those that do not intersect with its boundaries
-        raster::crs(x) <- NA
-        sapply(tileExt, function(xt) !rgeos::gIntersects(x, as(xt, "SpatialPolygons")))
+        lengths(sf::st_intersects(out_sf, x)) == 0
 
-      }else if('SpatRaster' %in% class(x)){
+
+      }else if(inclass == 'SpatRaster'){
 
         # If the input is a raster, empty tiles are those that contain only NA values
         sapply(1:nrow(out_sf), function(i){
@@ -453,45 +461,19 @@ tileScheme <- function(x, dim, cells = FALSE,
 
     }
 
-  ### CONVERT TO POLYGONS ----
+  ### CREATE NON-OVERLAPPING POLYGONS ----
 
-    out_sf <- .nonoverlappingBuffers(out_sf)
+    out_sf <- .nbuffs(out_sf)
 
 
   ### RETURN OUTPUT ----
 
-    new("tileScheme",
-        sf = out_sf,
-        buffer = buffer
-    )
-}
-
-
-.extents_to_polygons <- function(extents){
-
-  ps <- stats::setNames(lapply(names(extents), function(extName){
-
-    ext <- extents[[extName]]
-
-    p <- rbind(
-      c(ext[1], ext[3]),
-      c(ext[1], ext[4]),
-      c(ext[2], ext[4]),
-      c(ext[2], ext[3]),
-      c(ext[1], ext[3]) )
-
-    sp::Polygons(list(sp::Polygon(p)), extName)
-
-  }), names(extents))
-
-  for(i in 1:length(ps)) ps[[i]]@plotOrder <- i
-
-  return(ps)
+    new("tileScheme", sf = out_sf, buffer = buffer)
 }
 
 
 
-.nonoverlappingBuffers <- function(out_sf){
+.nbuffs <- function(out_sf){
 
   neib_win <- expand.grid(c(-1,0,1), c(-1,0,1))[-5,]
   row.names(neib_win) <- c("topleft", "top", "topright", "left", "right", "bottomleft", "bottom", "bottomright")
@@ -568,7 +550,7 @@ tileScheme <- function(x, dim, cells = FALSE,
   })
 
   # Combine with input sf
-  dplyr::bind_cols(out_sf, nbuffs = sf::st_as_sfc(polys))
+  dplyr::bind_cols(out_sf, nbuffs = sf::st_as_sfc(polys, crs = sf::st_crs(out_sf)))
 
 }
 
@@ -632,12 +614,13 @@ tileScheme <- function(x, dim, cells = FALSE,
 }
 
 
-.exts_to_polys <- function(tbl, name){
+.exts_to_polys <- function(exts, name, crs){
 
-  polys <- dplyr::bind_rows(apply(tbl, 1, function(x){
-    sf::st_sf(sf::st_as_sfc(sf::st_bbox(terra::ext(x))))
+  polys <- dplyr::bind_rows(lapply(exts,  function(x){
+    sf::st_sf(sf::st_as_sfc(sf::st_bbox(x)))
   }))
 
+  sf::st_crs(polys) <- crs
   sf::st_geometry(polys) <- name
   return(polys)
 }

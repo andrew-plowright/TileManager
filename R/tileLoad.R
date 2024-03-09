@@ -16,45 +16,33 @@ tileLoad <- function(filepath){
 
   if(!file.exists(filepath)) stop("File not found")
 
-  ### READ METADATA ----
+  ### READ DATA ----
 
-  # Set expected XML file path
-  xmlpath <- paste0(filepath, ".xml")
-  if(!file.exists(xmlpath)) stop("Could not find '", xmlpath, "'")
+  metadata <- suppressWarnings(sf::st_read(filepath, "metadata", quiet = TRUE))
 
-  # Get buffer from XML file
-  xmlDoc <- XML::xmlTreeParse(xmlpath, useInternalNodes = TRUE)
-  xmlBuff <- XML::getNodeSet(xmlDoc, "/metadata/tileManager/buffer")[[1]]
-  buffer <- as.numeric(XML::xmlValue(xmlBuff))
+  tiles  <- sf::st_read(filepath, layer = "tiles",  quiet = TRUE)
+  buffs  <- sf::st_read(filepath, layer = "buffs",  quiet = TRUE)
+  nbuffs <- sf::st_read(filepath, layer = "nbuffs", quiet = TRUE)
 
-  ### READ SHP FILE ----
+  if(!all(c(
+    nrow(tiles) == nrow(buffs),
+    nrow(tiles) == nrow(nbuffs),
+    all(tiles$tile_name == buffs$tile_name),
+    all(tiles$tile_name == nbuffs$tile_name)
+  ))) stop("Geopackage layers did not match")
 
-  spdf <- APfun::APSHPread(filepath)
+  sf::st_geometry(tiles) <- "tiles"
 
-  if(any(!c("row", "col", "tileName", "type") %in% names(spdf))) stop("Invalid column headers")
+  out_sf <- dplyr::bind_cols(
+    tiles,
+    buffs = buffs[["geom"]],
+    nbuffs = nbuffs[["geom"]]
+  )
 
-  polys <- lapply(c("tile", "buff", "nbuff"), function(tp){
-
-    s <- spdf[spdf[["type"]] == tp,]
-    sp::spChFIDs(s) <- s$tileName
-    p <- s@polygons
-    names(p) <- s$tileName
-    for(i in 1:length(p)) p[[i]]@plotOrder <- as.integer(i)
-    return(p)
-
-  })
-
-  tileData <- spdf@data[spdf[["type"]] == "tile", c("row", "col", "tileName")]
-  row.names(tileData) <- tileData$tileName
+  row.names(out_sf) <- out_sf[["tile_name"]]
 
   ### RETURN TILE SCHEME ----
 
-  new("tileScheme",
-      tiles  = polys[[1]],
-      buffs  = polys[[2]],
-      nbuffs = polys[[3]],
-      buffer = buffer,
-      crs    = raster::crs(spdf),
-      data   = tileData)
+  new("tileScheme", sf = out_sf, buffer = metadata[,"buffer"])
 
 }
