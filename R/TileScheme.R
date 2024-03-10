@@ -74,8 +74,35 @@ setMethod(
     }
 
     .subset_ts(x, w)
-
   })
+
+
+#' @rdname subset
+#' @export
+setMethod(
+  "[", signature(x = "tileScheme", i = "logical", j = "missing"),
+  function(x, i, j, ..., drop = TRUE) {
+
+    theCall <- sys.call(-1)
+    narg <- length(theCall) - length(match.call(call=sys.call(-1)))
+
+    # [i,]
+    w <- if(narg > 0){
+
+      stop("Logical indices not accepted for row selection")
+
+    # [i]
+    }else{
+
+      if(length(i) != length(x)) stop("Logical index of incorrect length")
+
+      which(i)
+    }
+
+    .subset_ts(x, w)
+  })
+
+
 
 #' @rdname subset
 #' @export
@@ -99,12 +126,17 @@ setMethod(
 
   function(x, i, j, ..., exact=TRUE) {
 
-    if(length(i) != 1 || !i %in% c('tiles', 'buffs', 'nbuffs')){
-      stop("Select one of the following: 'tiles', 'buffs', or 'nbuffs'")
+    if(length(i) != 1 || !i %in% c('tiles', 'buffs', 'nbuffs', 'tile_name')){
+      stop("Select one of the following: 'tiles', 'buffs', 'nbuffs', or 'tile_name")
     }
 
-    sf::st_geometry(x@sf) <- i
-    x@sf[,c('row', 'col', 'tile_name')]
+    if(i == "tile_name"){
+      x@sf[["tile_name"]]
+    }else{
+      sf::st_geometry(x@sf) <- i
+      x@sf[,c('row', 'col', 'tile_name')]
+    }
+
   })
 
 .subset_ts <- function(x, w){

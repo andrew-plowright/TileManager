@@ -5,4 +5,5 @@
 devtools.R
 data-raw
 revdep
+obsolete
 CRAN-RELEASE
