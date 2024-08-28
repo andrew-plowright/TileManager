@@ -1,7 +1,4 @@
 #' Tile Scheme class
-#'#'
-#' @importClassesFrom sp CRS
-#'
 #' @export
 
 setClass(
